@@ -8,5 +8,10 @@
 	"outline.keepWindow": true,
 	"outline.autoPreview": true,
 	"pylsp.plugins.pyflakes.enabled": false,
-	"pylsp.plugins.pycodestyle.enabled": false
+	"pylsp.plugins.pycodestyle.enabled": false,
+	"coc.preferences.jumpCommand": "tabnew",
+	"typescript.format.enable": false,
+	"eslint.autoFixOnSave": true,
+	"coc.preferences.bracketEnterImprove": false,
+	"list.floatPreview": true
 }

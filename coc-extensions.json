@@ -1,9 +1,12 @@
 [
   "@yaegassy/coc-pylsp",
+  "coc-eslint",
   "coc-go",
   "coc-json",
   "coc-lua",
   "coc-pairs",
+  "coc-sh",
   "coc-snippets",
+  "coc-tsserver",
   "coc-vimlsp"
 ]

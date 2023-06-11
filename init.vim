@@ -1,5 +1,6 @@
 " Reload vimrc
 command Vimrc source ~/.config/nvim/init.vim
+command EditVimrc edit ~/.config/nvim/init.vim
 
 " Plugins
 call plug#begin(stdpath('data') . '/plugged')
@@ -18,6 +19,8 @@ Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 " Fuzzy finder
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+" Terminal
+"Plug 'akinsho/toggleterm.nvim'
 " Completion/snippets
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 " Git integration
@@ -41,9 +44,6 @@ local function nmap(lhs, rhs, opts)
 	map('n', lhs, rhs, opts)
 end
 
--- Disable mouse
---vim.opt.mouse = nil
-
 -- Clear highlight when escape is pressed
 nmap('<esc>', '<Cmd>noh<CR><esc>')
 
@@ -63,6 +63,9 @@ vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.updatetime = 100
 
+vim.opt.equalalways = false
+vim.opt.hidden = true
+
 -- Buffer navigation
 vim.opt.splitbelow = true
 nmap('<M-h>', '<C-w>h')
@@ -74,6 +77,7 @@ nmap('<M-H>', '<Cmd>abo vnew<CR>')
 nmap('<M-J>', '<Cmd>bel new<CR>')
 nmap('<M-K>', '<Cmd>abo new<CR>')
 nmap('<M-L>', '<Cmd>bel vnew<CR>')
+
 -- Terminal
 nmap('<C-x>', '<Cmd>15new +terminal<CR>i')
 map('t', '<esc>', '<C-\\><C-n>') -- Escape switches to normal mode in terminals
@@ -122,7 +126,6 @@ nmap('<C-n>', '<Cmd>Neotree toggle action=show<CR>')
 -- Gitsigns
 require'gitsigns'.setup()
 
-
 -- Autocomplete
 nmap('<M-n>', '<Cmd>CocDisable<CR>')
 nmap('<M-N>', '<Cmd>CocEnable<CR>')
@@ -136,13 +139,13 @@ end
 -- no select by setting `"suggest.noselect": true` in your configuration file
 -- NOTE: Use command ':verbose imap <tab>' to make sure Tab is not mapped by
 -- other plugins before putting this into your config
-local opts = {silent = true, noremap = true, expr = true, replace_keycodes = false}
-map("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()', opts)
-map("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
+local coc_map_opts = {silent = true, noremap = true, expr = true, replace_keycodes = false}
+map("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()', coc_map_opts)
+map("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], coc_map_opts)
 
 -- Make <CR> to accept selected completion item or notify coc.nvim to format
 -- <C-g>u breaks current undo, please make your own choice
-map("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
+map("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], coc_map_opts)
 
 -- Use K to show documentation in preview window
 function _G.show_docs()
@@ -156,6 +159,20 @@ function _G.show_docs()
     end
 end
 nmap("K", '<CMD>lua _G.show_docs()<CR>', {silent = true})
+
+-- Use `[g` and `]g` to navigate diagnostics
+-- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
+nmap("<M-,>", "<Plug>(coc-diagnostic-prev)", {silent = true})
+nmap("<M-.>", "<Plug>(coc-diagnostic-next)", {silent = true})
+
+-- GoTo code navigation
+nmap("gd", "<Plug>(coc-definition)", {silent = true})
+nmap("gy", "<Plug>(coc-type-definition)", {silent = true})
+nmap("gi", "<Plug>(coc-implementation)", {silent = true})
+nmap("gr", "<Plug>(coc-references)", {silent = true})
+
+-- Symbol renaming
+nmap('<F2>', '<Plug>(coc-rename)', {silent = true})
 END
 
 
@@ -217,9 +234,9 @@ require'lualine'.setup {
 	},
 	sections = {
 		lualine_a = {'mode'},
-		lualine_b = {'filename', 'g:coc_status'},
+		lualine_b = {'filename'},
 		lualine_c = {'branch', 'diff'},
-		lualine_x = {'filetype'},
+		lualine_x = {'g:coc_status', 'filetype'},
 		lualine_y = {'location'},
 		lualine_z = {'progress'}
 	},
@@ -231,6 +248,13 @@ require'lualine'.setup {
 				use_mode_colors = true
 			}
 		}
+	},
+	extensions = {
+		'fugitive',
+		'fzf',
+		'man',
+		'neo-tree',
+		'toggleterm'
 	}
 }
 END
