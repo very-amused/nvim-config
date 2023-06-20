@@ -13,6 +13,7 @@ Plug 'nvim-lualine/lualine.nvim'
 Plug 'nvim-tree/nvim-web-devicons'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'MunifTanjim/nui.nvim'
+Plug 's1n7ax/nvim-window-picker'
 Plug 'nvim-neo-tree/neo-tree.nvim'
 " Syntax highlighting
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
@@ -61,6 +62,7 @@ vim.opt.relativenumber = true
 vim.opt.clipboard = 'unnamedplus'
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
+vim.opt.expandtab = false
 vim.opt.updatetime = 100
 
 vim.opt.equalalways = false
@@ -79,8 +81,12 @@ nmap('<M-K>', '<Cmd>abo new<CR>')
 nmap('<M-L>', '<Cmd>bel vnew<CR>')
 
 -- Terminal
-nmap('<C-x>', '<Cmd>15new +terminal<CR>i')
-map('t', '<esc>', '<C-\\><C-n>') -- Escape switches to normal mode in terminals
+nmap('<C-x>', '<Cmd>15new +terminal<CR>')
+--map('t', '<esc>', '<C-\\><C-n>') -- Escape switches to normal mode in terminals
+map('t', '<M-h>', '<C-\\><C-n><C-w>h')
+map('t', '<M-j>', '<C-\\><C-n><C-w>j')
+map('t', '<M-k>', '<C-\\><C-n><C-w>k')
+map('t', '<M-l>', '<C-\\><C-n><C-w>l')
 -- Close window
 nmap('<M-w>', '<Cmd>q<CR>')
 -- Delete buffer
@@ -106,18 +112,59 @@ nmap('<M-c>', '<Cmd>tabclose<CR>')
 
 -- FZF
 nmap('<C-_>', '<Cmd>Files<CR>')
+nmap('<C-.>', '<Cmd>Rg<CR>')
+
+-- Window picker
+require'window-picker'.setup {
+	hint = 'floating-big-letter',
+}
 
 -- Neotree
 require'neo-tree'.setup {
 	window = {
-		width = 30
+		width = 30,
+		mappings = {
+			-- Search
+			["/"] = "none",
+			["?"] = "none",
+			["#"] = "show_help",
+			["<esc>"] = function(state)
+				vim.cmd("noh")
+			end,
+			-- Copy/paste
+			["d"] = "none",
+			["D"] = "none",
+			["dd"] = "cut_to_clipboard",
+			["dD"] = "delete",
+			["y"] = "none",
+			["yy"] = "copy_to_clipboard",
+			-- Splits/tabs
+			["s"] = "vsplit_with_window_picker",
+			["S"] = "split_with_window_picker",
+			-- Source selector
+			["n"] = "prev_source",
+			["m"] = "next_source",
+			-- Directory expansion
+			["Z"] = "expand_all_nodes"
+		}
+	},
+	filesystem = {
+		filtered_items ={
+			hide_gitignored = false,
+			hide_dotfiles = false,
+			hide_by_name = {
+				".git",
+				".github",
+				"node_modules"
+			}
+		}
 	},
 	source_selector = {
 		winbar = true,
 		sources = {
 			{ source = "filesystem", display_name = "Files"},
-			{ source = "buffers", display_name = "Buffers"},
-			{ source = "git_status", display_name = "Git"}
+			{ source = "git_status", display_name = "Git"},
+			{ source = "buffers", display_name = "Buffers"}
 		}
 	}
 }
@@ -195,14 +242,16 @@ require'nvim-treesitter.configs'.setup {
 		'html', 'http',
 		'java', 'javascript', 'jsdoc', 'json',
 		'latex', 'lua',
+		'make',
 		'python',
-		'regex',
+		'regex', 'rust',
 		'scss', 'sql',
 		'toml', 'typescript',
 		'vim',
 		'yaml'},
 	highlight = {
-		enable = true
+		enable = true,
+		additional_vim_regex_highlighting = {"python"}
 	}
 }
 
@@ -221,6 +270,10 @@ END
 
 " nvim-tree save autocmds
 autocmd BufWritePre *.go :silent call CocAction('runCommand', 'editor.action.organizeImport')
+
+" Terminal autocmds
+autocmd TermOpen * setlocal nonu | setlocal norelativenumber | startinsert
+autocmd BufEnter term://* startinsert
 
 " Statusline
 lua << END
