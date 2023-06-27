@@ -166,6 +166,14 @@ require'neo-tree'.setup {
 			{ source = "git_status", display_name = "Git"},
 			{ source = "buffers", display_name = "Buffers"}
 		}
+	},
+	event_handlers = {
+		{
+			event = "neo_tree_buffer_enter",
+			handler = function(arg)
+				vim.cmd[[setlocal relativenumber ]]
+			end
+		}
 	}
 }
 nmap('<C-n>', '<Cmd>Neotree toggle action=show<CR>')
