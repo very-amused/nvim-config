@@ -11,17 +11,12 @@ Plug 'navarasu/onedark.nvim'
 Plug 'nvim-lualine/lualine.nvim'
 " File manager
 Plug 'nvim-tree/nvim-web-devicons'
-Plug 'nvim-lua/plenary.nvim'
-Plug 'MunifTanjim/nui.nvim'
-Plug 's1n7ax/nvim-window-picker'
-Plug 'nvim-neo-tree/neo-tree.nvim'
+Plug 'nvim-tree/nvim-tree.lua'
 " Syntax highlighting
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 " Fuzzy finder
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-" Terminal
-"Plug 'akinsho/toggleterm.nvim'
 " Completion/snippets
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 " Git integration
@@ -114,69 +109,35 @@ nmap('<M-c>', '<Cmd>tabclose<CR>')
 nmap('<C-_>', '<Cmd>Files<CR>')
 nmap('<C-.>', '<Cmd>Rg<CR>')
 
--- Window picker
-require'window-picker'.setup {
-	hint = 'floating-big-letter',
-}
-
--- Neotree
-require'neo-tree'.setup {
-	window = {
+-- nvim-tree
+require'nvim-tree'.setup{
+	view = {
 		width = 30,
-		mappings = {
-			-- Search
-			["/"] = "none",
-			["?"] = "none",
-			["#"] = "show_help",
-			["<esc>"] = function(state)
-				vim.cmd("noh")
-			end,
-			-- Copy/paste
-			["d"] = "none",
-			["D"] = "none",
-			["dd"] = "cut_to_clipboard",
-			["dD"] = "delete",
-			["y"] = "none",
-			["yy"] = "copy_to_clipboard",
-			-- Splits/tabs
-			["s"] = "vsplit_with_window_picker",
-			["S"] = "split_with_window_picker",
-			-- Source selector
-			["n"] = "prev_source",
-			["m"] = "next_source",
-			-- Directory expansion
-			["Z"] = "expand_all_nodes"
-		}
+		relativenumber = true
 	},
-	filesystem = {
-		filtered_items ={
-			hide_gitignored = false,
-			hide_dotfiles = false,
-			hide_by_name = {
-				".git",
-				".github",
-				"node_modules"
+	diagnostics = {
+		enable = true,
+		show_on_dirs = true,
+		show_on_open_dirs = false
+	},
+	git = {
+		show_on_open_dirs = false
+	},
+	renderer = {
+		icons = {
+			git_placement = "after",
+			padding = " ",
+			glyphs = {
+				git = {
+					unstaged = 'M',
+					untracked = 'U',
+					deleted = 'D'
+				}
 			}
-		}
-	},
-	source_selector = {
-		winbar = true,
-		sources = {
-			{ source = "filesystem", display_name = "Files"},
-			{ source = "git_status", display_name = "Git"},
-			{ source = "buffers", display_name = "Buffers"}
-		}
-	},
-	event_handlers = {
-		{
-			event = "neo_tree_buffer_enter",
-			handler = function(arg)
-				vim.cmd[[setlocal relativenumber ]]
-			end
 		}
 	}
 }
-nmap('<C-n>', '<Cmd>Neotree toggle action=show<CR>')
+nmap('<C-n>', '<Cmd>NvimTreeToggle<CR>')
 
 -- Gitsigns
 require'gitsigns'.setup()
@@ -314,7 +275,6 @@ require'lualine'.setup {
 		'fugitive',
 		'fzf',
 		'man',
-		'neo-tree',
 		'toggleterm'
 	}
 }

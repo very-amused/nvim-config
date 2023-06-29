@@ -19,6 +19,7 @@
     "coc.preferences.formatOnSave": false
   },
   "[python]": {
-    "inlayHint.enable": false
+    "inlayHint.enable": false,
+    "coc.preferences.formatOnSave": false
   }
 }
