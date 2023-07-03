@@ -1,3 +1,40 @@
+-- disable netrw
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+-- set termguicolors to enable highlight groups
+vim.opt.termguicolors = true
+
+-- Basic window opts
+vim.opt.title = true
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.clipboard = 'unnamedplus' -- Use system clipboard
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = false
+vim.opt.updatetime = 100
+
+vim.opt.equalalways = false
+vim.opt.hidden = true
+vim.opt.splitbelow = true
+-- Disable syntax highlighting (nvim-treesitter is used)
+vim.opt.syntax = 'off'
+
+-- Helper fns
+local function map(mode, lhs, rhs, opts)
+	local default_opts = { noremap = true, silent = true }
+	opts = opts or default_opts
+	vim.keymap.set(mode, lhs, rhs, opts)
+end
+local function nmap(lhs, rhs, opts)
+	map('n', lhs, rhs, opts)
+end
+local function command(name, cmd)
+	vim.api.nvim_create_user_command(name, cmd, {})
+end
+
+-- Plugins
 require 'paq' {
 	'savq/paq-nvim',
 	-- Color theme
@@ -18,23 +55,6 @@ require 'paq' {
 	'tpope/vim-fugitive'
 }
 
-
--- Disable syntax highlighting (nvim-treesitter is used)
-vim.opt.syntax = 'off'
-
--- Map helper fn
-local function map(mode, lhs, rhs, opts)
-	local default_opts = { noremap = true, silent = true }
-	opts = opts or default_opts
-	vim.keymap.set(mode, lhs, rhs, opts)
-end
-local function nmap(lhs, rhs, opts)
-	map('n', lhs, rhs, opts)
-end
-local function command(name, cmd)
-	vim.api.nvim_create_user_command(name, cmd, {})
-end
-
 -- Manage init.lua
 command('Vimrc', 'source ~/.config/nvim/init.lua')
 command('EditVimrc', 'edit ~/.config/nvim/init.lua')
@@ -42,28 +62,7 @@ command('EditVimrc', 'edit ~/.config/nvim/init.lua')
 -- Clear highlight when escape is pressed
 nmap('<esc>', '<Cmd>noh<CR><esc>')
 
--- disable netrw at the very start of your init.lua
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
-
--- set termguicolors to enable highlight groups
-vim.opt.termguicolors = true
-
--- Basic window opts
-vim.opt.title = true
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.clipboard = 'unnamedplus'
-vim.opt.tabstop = 2
-vim.opt.shiftwidth = 2
-vim.opt.expandtab = false
-vim.opt.updatetime = 100
-
-vim.opt.equalalways = false
-vim.opt.hidden = true
-
 -- Buffer navigation
-vim.opt.splitbelow = true
 nmap('<M-h>', '<C-w>h')
 nmap('<M-j>', '<C-w>j')
 nmap('<M-k>', '<C-w>k')
@@ -74,9 +73,20 @@ nmap('<M-J>', '<Cmd>bel new<CR>')
 nmap('<M-K>', '<Cmd>abo new<CR>')
 nmap('<M-L>', '<Cmd>bel vnew<CR>')
 
--- Terminal
+-- Terminal handling
 nmap('<C-x>', '<Cmd>15new +terminal<CR>')
---map('t', '<esc>', '<C-\\><C-n>') -- Escape switches to normal mode in terminals
+vim.api.nvim_create_autocmd({ 'TermOpen' }, {
+	callback = function()
+		vim.opt.number = false
+		vim.opt.relativenumber = false
+		vim.cmd('startinsert')
+	end
+})
+vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+	pattern = { 'term://*' },
+	command = 'startinsert'
+})
+-- Automatically switch to normal mode to move out of terminals
 map('t', '<M-h>', '<C-\\><C-n><C-w>h')
 map('t', '<M-j>', '<C-\\><C-n><C-w>j')
 map('t', '<M-k>', '<C-\\><C-n><C-w>k')
@@ -104,9 +114,50 @@ nmap('<M-}>', '<Cmd>+tabmove<CR>')
 -- Close tabs
 nmap('<M-c>', '<Cmd>tabclose<CR>')
 
--- FZF
-nmap('<C-_>', '<Cmd>FzfLua files<CR>')
-nmap('<C-.>', '<Cmd>FzfLua grep_project<CR>')
+-- Begin plugin configs
+
+-- Don't load onedark in ttys
+if not (os.getenv('TERM') == 'linux') then
+	-- Onedark theme config
+	require 'onedark'.setup {
+		style = 'deep'
+	}
+	require 'onedark'.load()
+end
+
+-- Statusline
+vim.opt.showmode = false -- Mode info is contained in statusline
+require 'lualine'.setup {
+	options = {
+		theme = 'onedark',
+		section_separators = '',
+		component_separators = '',
+		globalstatus = true
+	},
+	sections = {
+		lualine_a = { 'mode' },
+		lualine_b = { 'filename' },
+		lualine_c = { 'branch', 'diff' },
+		lualine_x = { 'g:coc_status', 'filetype' },
+		lualine_y = { 'location' },
+		lualine_z = { 'progress' }
+	},
+	tabline = {
+		lualine_a = {
+			{
+				'tabs',
+				mode = 2,
+				use_mode_colors = true
+			}
+		}
+	},
+	extensions = {
+		'fugitive',
+		'fzf',
+		'man',
+		'nvim-tree'
+	}
+}
 
 -- nvim-tree
 local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :h nvim-tree
@@ -170,12 +221,36 @@ require 'nvim-tree'.setup {
 	},
 	on_attach = nvim_tree_on_attach
 }
+
 nmap('<C-n>', '<Cmd>NvimTreeToggle<CR>')
 
--- Gitsigns
-require 'gitsigns'.setup()
+-- Treesitter config
+require 'nvim-treesitter.configs'.setup {
+	ensure_installed = {
+		'bash', 'bibtex',
+		'c', 'comment', 'cpp', 'css',
+		'go', 'gomod',
+		'html', 'http',
+		'java', 'javascript', 'jsdoc', 'json',
+		'latex', 'lua',
+		'make',
+		'python',
+		'regex', 'rust',
+		'scss', 'sql',
+		'toml', 'typescript',
+		'vim',
+		'yaml' },
+	highlight = {
+		enable = true,
+		additional_vim_regex_highlighting = { "python" }
+	}
+}
 
--- Autocomplete
+-- FZF
+nmap('<C-_>', '<Cmd>FzfLua files<CR>')
+nmap('<C-.>', '<Cmd>FzfLua grep_project<CR>')
+
+-- coc.nvim
 nmap('<M-n>', '<Cmd>CocDisable<CR>')
 nmap('<M-N>', '<Cmd>CocEnable<CR>')
 function _G.check_back_space()
@@ -225,40 +300,8 @@ nmap("gr", "<Plug>(coc-references)", { silent = true })
 -- Symbol renaming
 nmap('<F2>', '<Plug>(coc-rename)', { silent = true })
 
--- Don't load onedark in ttys
-if not (os.getenv('TERM') == 'linux') then
-	-- Onedark theme config
-	require 'onedark'.setup {
-		style = 'deep'
-	}
-	require 'onedark'.load()
-end
 
--- Treesitter config
-require 'nvim-treesitter.configs'.setup {
-	ensure_installed = {
-		'bash', 'bibtex',
-		'c', 'comment', 'cpp', 'css',
-		'go', 'gomod',
-		'html', 'http',
-		'java', 'javascript', 'jsdoc', 'json',
-		'latex', 'lua',
-		'make',
-		'python',
-		'regex', 'rust',
-		'scss', 'sql',
-		'toml', 'typescript',
-		'vim',
-		'yaml' },
-	highlight = {
-		enable = true,
-		additional_vim_regex_highlighting = { "python" }
-	}
-}
 
--- Neotree config
-
--- coc.nvim config
 -- Some LSP servers have issues with backup files
 vim.opt.backup = false
 vim.opt.writebackup = false
@@ -272,54 +315,12 @@ vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
 	callback = function() vim.fn.CocAction('runCommand', 'editor.action.organizeImport') end
 })
 
--- Terminal handling autocmds
-vim.api.nvim_create_autocmd({ 'TermOpen' }, {
-	callback = function()
-		vim.opt.number = false
-		vim.opt.relativenumber = false
-		vim.cmd('startinsert')
-	end
-})
-vim.api.nvim_create_autocmd({ 'BufEnter' }, {
-	pattern = { 'term://*' },
-	command = 'startinsert'
-})
+-- Gitsigns
+require 'gitsigns'.setup()
 
--- Statusline
-vim.opt.showmode = false -- Mode info is contained in statusline
-require 'lualine'.setup {
-	options = {
-		theme = 'onedark',
-		section_separators = '',
-		component_separators = '',
-		globalstatus = true
-	},
-	sections = {
-		lualine_a = { 'mode' },
-		lualine_b = { 'filename' },
-		lualine_c = { 'branch', 'diff' },
-		lualine_x = { 'g:coc_status', 'filetype' },
-		lualine_y = { 'location' },
-		lualine_z = { 'progress' }
-	},
-	tabline = {
-		lualine_a = {
-			{
-				'tabs',
-				mode = 2,
-				use_mode_colors = true
-			}
-		}
-	},
-	extensions = {
-		'fugitive',
-		'fzf',
-		'man',
-		'toggleterm'
-	}
-}
+-- TODO: Gitsigns keybinds
 
--- Config file highlighting types
+-- Custom file highlighting types
 vim.api.nvim_create_autocmd({ 'BufEnter' }, {
 	pattern = 'mopidy/*.conf',
 	command = 'set filetype=dosini'
