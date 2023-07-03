@@ -247,8 +247,9 @@ require 'nvim-treesitter.configs'.setup {
 }
 
 -- FZF
-nmap('<C-_>', '<Cmd>FzfLua files<CR>')
-nmap('<C-.>', '<Cmd>FzfLua grep_project<CR>')
+vim.g.mapleader = " "
+nmap('<leader>/', '<Cmd>FzfLua files<CR>')
+nmap('<leader>?', '<Cmd>FzfLua grep_project<CR>')
 
 -- coc.nvim
 nmap('<M-n>', '<Cmd>CocDisable<CR>')
@@ -316,9 +317,33 @@ vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
 })
 
 -- Gitsigns
-require 'gitsigns'.setup()
+local function gitsigns_on_attach(bufnr)
+	local gs = package.loaded.gitsigns
 
--- TODO: Gitsigns keybinds
+	local function opts(desc)
+		return { desc = "gitsigns: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+	end
+
+	-- Navigate between hunks
+	nmap('<M-;>', gs.prev_hunk, opts('Prev Hunk'))
+	nmap("<M-'>", gs.next_hunk, opts('Next Hunk'))
+
+	-- Actions
+	nmap('<leader>gs', gs.stage_hunk, opts('Stage Hunk'))
+	nmap('<leader>gr', gs.reset_hunk, opts('Reset Hunk'))
+	map('v', '<leader>gs', function() gs.stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end, opts('Stage Hunk'))
+	map('v', '<leader>gr', function() gs.reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end, opts('Reset Hunk'))
+	nmap('<leader>gu', gs.undo_stage_hunk, opts('Undo Stage Hunk'))
+	nmap('<leader>gS', gs.stage_buffer, opts('Stage Buffer'))
+	nmap('<leader>gp', gs.preview_hunk, opts('Preview Hunk'))
+	nmap('<leader>gd', gs.diffthis, opts('Show Diff'))
+	nmap('<leader>gD', function() gs.diffthis('~') end, opts('Show Diff'))
+	nmap('<leader>td', gs.toggle_deleted, opts('Toggle Deleted'))
+end
+
+require 'gitsigns'.setup {
+	on_attach = gitsigns_on_attach
+}
 
 -- Custom file highlighting types
 vim.api.nvim_create_autocmd({ 'BufEnter' }, {
