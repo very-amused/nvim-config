@@ -2,30 +2,27 @@
 command Vimrc source ~/.config/nvim/init.vim
 command EditVimrc edit ~/.config/nvim/init.vim
 
-" Plugins
-call plug#begin(stdpath('data') . '/plugged')
-
-" Color theme
-Plug 'navarasu/onedark.nvim'
-" Statusline
-Plug 'nvim-lualine/lualine.nvim'
-" File manager
-Plug 'nvim-tree/nvim-web-devicons'
-Plug 'nvim-tree/nvim-tree.lua'
-" Syntax highlighting
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-" Fuzzy finder
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
-" Completion/snippets
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-" Git integration
-Plug 'lewis6991/gitsigns.nvim'
-Plug 'tpope/vim-fugitive'
-
-call plug#end()
-
 lua << END
+
+require 'paq' {
+	'savq/paq-nvim',
+	-- Color theme
+	'navarasu/onedark.nvim',
+	-- Statusline
+	'nvim-lualine/lualine.nvim',
+	-- File manager
+	'nvim-tree/nvim-web-devicons',
+	'nvim-tree/nvim-tree.lua',
+	-- Syntax highlighting
+	{ 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
+	-- Fuzzy finder
+	{ 'ibhagwan/fzf-lua', branch = 'main' },
+	-- Completion/snippets
+	{ 'neoclide/coc.nvim', branch = 'release' },
+	-- Git integration
+	'lewis6991/gitsigns.nvim',
+	'tpope/vim-fugitive'
+}
 
 -- Disable syntax highlighting (nvim-treesitter is used)
 vim.opt.syntax = 'off'
@@ -106,11 +103,44 @@ nmap('<M-}>', '<Cmd>+tabmove<CR>')
 nmap('<M-c>', '<Cmd>tabclose<CR>')
 
 -- FZF
-nmap('<C-_>', '<Cmd>Files<CR>')
-nmap('<C-.>', '<Cmd>Rg<CR>')
+nmap('<C-_>', '<Cmd>FzfLua files<CR>')
+nmap('<C-.>', '<Cmd>FzfLua grep_project<CR>')
 
 -- nvim-tree
+local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :h nvim-tree
+	local api = require'nvim-tree.api'
+	local function opts(desc)
+		return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+	end
+
+	-- default mappings
+	api.config.mappings.default_on_attach(bufnr)
+
+	-- custom mappings
+	nmap('yy', api.fs.copy.node, opts('Copy'))
+	nmap('yn', api.fs.copy.filename, opts('Copy Name'))
+	nmap('yp', api.fs.copy.absolute_path, opts('Copy Absolute Path'))
+	nmap('pp', api.fs.paste, opts('Paste'))
+	nmap('dd', api.fs.cut, opts('Cut'))
+	nmap('dD', api.fs.remove, opts('Delete'))
+	nmap('cw', api.fs.rename, opts('Rename'))
+	nmap('<M-,>', api.node.navigate.diagnostics.prev, opts('Prev Diagnostic'))
+	nmap('<M-.>', api.node.navigate.diagnostics.next, opts('Next Diagnostic'))
+	nmap('s', api.node.open.horizontal, opts('Open: Horizontal Split'))
+	nmap('v', api.node.open.vertical, opts('Open: Vertical Split'))
+	nmap('t', api.node.open.tab, opts('Open: New Tab'))
+end
+
 require'nvim-tree'.setup{
+	update_focused_file = {
+		enable = true
+	},
+	tab = {
+		sync = {
+			open = true,
+			close = true
+		}
+	},
 	view = {
 		width = 30,
 		relativenumber = true
@@ -135,7 +165,8 @@ require'nvim-tree'.setup{
 				}
 			}
 		}
-	}
+	},
+	on_attach = nvim_tree_on_attach
 }
 nmap('<C-n>', '<Cmd>NvimTreeToggle<CR>')
 
@@ -234,18 +265,26 @@ vim.opt.writebackup = false
 -- Always show the sign column to avoid text shifts
 vim.opt.signcolumn = 'yes'
 
+-- Organize go imports on save
+vim.api.nvim_create_autocmd({'BufWritePre'}, {
+	pattern = {'*.go'},
+	callback = function() vim.fn.CocAction('runCommand', 'editor.action.organizeImport') end
+})
 
-END
+-- Terminal handling autocmds
+vim.api.nvim_create_autocmd({'TermOpen'}, {
+	callback = function()
+		vim.opt.number = false
+		vim.opt.relativenumber = false
+		vim.cmd('startinsert')
+	end
+})
+vim.api.nvim_create_autocmd({'BufEnter'}, {
+	pattern = {'term://*'},
+	command = 'startinsert'
+})
 
-" nvim-tree save autocmds
-autocmd BufWritePre *.go :silent call CocAction('runCommand', 'editor.action.organizeImport')
-
-" Terminal autocmds
-autocmd TermOpen * setlocal nonu | setlocal norelativenumber | startinsert
-autocmd BufEnter term://* startinsert
-
-" Statusline
-lua << END
+-- Statusline
 vim.opt.showmode = false -- Mode info is contained in statusline
 require'lualine'.setup {
 	options = {
