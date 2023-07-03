@@ -1,9 +1,3 @@
-" Reload vimrc
-command Vimrc source ~/.config/nvim/init.vim
-command EditVimrc edit ~/.config/nvim/init.vim
-
-lua << END
-
 require 'paq' {
 	'savq/paq-nvim',
 	-- Color theme
@@ -16,13 +10,14 @@ require 'paq' {
 	-- Syntax highlighting
 	{ 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
 	-- Fuzzy finder
-	{ 'ibhagwan/fzf-lua', branch = 'main' },
+	{ 'ibhagwan/fzf-lua',                branch = 'main' },
 	-- Completion/snippets
-	{ 'neoclide/coc.nvim', branch = 'release' },
+	{ 'neoclide/coc.nvim',               branch = 'release' },
 	-- Git integration
 	'lewis6991/gitsigns.nvim',
 	'tpope/vim-fugitive'
 }
+
 
 -- Disable syntax highlighting (nvim-treesitter is used)
 vim.opt.syntax = 'off'
@@ -36,6 +31,13 @@ end
 local function nmap(lhs, rhs, opts)
 	map('n', lhs, rhs, opts)
 end
+local function command(name, cmd)
+	vim.api.nvim_create_user_command(name, cmd, {})
+end
+
+-- Manage init.lua
+command('Vimrc', 'source ~/.config/nvim/init.lua')
+command('EditVimrc', 'edit ~/.config/nvim/init.lua')
 
 -- Clear highlight when escape is pressed
 nmap('<esc>', '<Cmd>noh<CR><esc>')
@@ -108,7 +110,7 @@ nmap('<C-.>', '<Cmd>FzfLua grep_project<CR>')
 
 -- nvim-tree
 local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :h nvim-tree
-	local api = require'nvim-tree.api'
+	local api = require 'nvim-tree.api'
 	local function opts(desc)
 		return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
 	end
@@ -131,7 +133,7 @@ local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :
 	nmap('t', api.node.open.tab, opts('Open: New Tab'))
 end
 
-require'nvim-tree'.setup{
+require 'nvim-tree'.setup {
 	update_focused_file = {
 		enable = true
 	},
@@ -171,14 +173,14 @@ require'nvim-tree'.setup{
 nmap('<C-n>', '<Cmd>NvimTreeToggle<CR>')
 
 -- Gitsigns
-require'gitsigns'.setup()
+require 'gitsigns'.setup()
 
 -- Autocomplete
 nmap('<M-n>', '<Cmd>CocDisable<CR>')
 nmap('<M-N>', '<Cmd>CocEnable<CR>')
 function _G.check_back_space()
-    local col = vim.fn.col('.') - 1
-    return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
+	local col = vim.fn.col('.') - 1
+	return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
 end
 
 -- Use Tab for trigger completion with characters ahead and navigate
@@ -186,8 +188,9 @@ end
 -- no select by setting `"suggest.noselect": true` in your configuration file
 -- NOTE: Use command ':verbose imap <tab>' to make sure Tab is not mapped by
 -- other plugins before putting this into your config
-local coc_map_opts = {silent = true, noremap = true, expr = true, replace_keycodes = false}
-map("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()', coc_map_opts)
+local coc_map_opts = { silent = true, noremap = true, expr = true, replace_keycodes = false }
+map("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()',
+	coc_map_opts)
 map("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], coc_map_opts)
 
 -- Make <CR> to accept selected completion item or notify coc.nvim to format
@@ -196,45 +199,43 @@ map("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=c
 
 -- Use K to show documentation in preview window
 function _G.show_docs()
-    local cw = vim.fn.expand('<cword>')
-    if vim.fn.index({'vim', 'help'}, vim.bo.filetype) >= 0 then
-        vim.api.nvim_command('h ' .. cw)
-    elseif vim.api.nvim_eval('coc#rpc#ready()') then
-        vim.fn.CocActionAsync('doHover')
-    else
-        vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
-    end
+	local cw = vim.fn.expand('<cword>')
+	if vim.fn.index({ 'vim', 'help' }, vim.bo.filetype) >= 0 then
+		vim.api.nvim_command('h ' .. cw)
+	elseif vim.api.nvim_eval('coc#rpc#ready()') then
+		vim.fn.CocActionAsync('doHover')
+	else
+		vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
+	end
 end
-nmap("K", '<CMD>lua _G.show_docs()<CR>', {silent = true})
+
+nmap("K", '<CMD>lua _G.show_docs()<CR>', { silent = true })
 
 -- Use `[g` and `]g` to navigate diagnostics
 -- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
-nmap("<M-,>", "<Plug>(coc-diagnostic-prev)", {silent = true})
-nmap("<M-.>", "<Plug>(coc-diagnostic-next)", {silent = true})
+nmap("<M-,>", "<Plug>(coc-diagnostic-prev)", { silent = true })
+nmap("<M-.>", "<Plug>(coc-diagnostic-next)", { silent = true })
 
 -- GoTo code navigation
-nmap("gd", "<Plug>(coc-definition)", {silent = true})
-nmap("gy", "<Plug>(coc-type-definition)", {silent = true})
-nmap("gi", "<Plug>(coc-implementation)", {silent = true})
-nmap("gr", "<Plug>(coc-references)", {silent = true})
+nmap("gd", "<Plug>(coc-definition)", { silent = true })
+nmap("gy", "<Plug>(coc-type-definition)", { silent = true })
+nmap("gi", "<Plug>(coc-implementation)", { silent = true })
+nmap("gr", "<Plug>(coc-references)", { silent = true })
 
 -- Symbol renaming
-nmap('<F2>', '<Plug>(coc-rename)', {silent = true})
-END
+nmap('<F2>', '<Plug>(coc-rename)', { silent = true })
 
-
-lua << END
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
 	-- Onedark theme config
-	require'onedark'.setup {
+	require 'onedark'.setup {
 		style = 'deep'
 	}
-	require'onedark'.load()
+	require 'onedark'.load()
 end
 
 -- Treesitter config
-require'nvim-treesitter.configs'.setup {
+require 'nvim-treesitter.configs'.setup {
 	ensure_installed = {
 		'bash', 'bibtex',
 		'c', 'comment', 'cpp', 'css',
@@ -248,10 +249,10 @@ require'nvim-treesitter.configs'.setup {
 		'scss', 'sql',
 		'toml', 'typescript',
 		'vim',
-		'yaml'},
+		'yaml' },
 	highlight = {
 		enable = true,
-		additional_vim_regex_highlighting = {"python"}
+		additional_vim_regex_highlighting = { "python" }
 	}
 }
 
@@ -266,27 +267,27 @@ vim.opt.writebackup = false
 vim.opt.signcolumn = 'yes'
 
 -- Organize go imports on save
-vim.api.nvim_create_autocmd({'BufWritePre'}, {
-	pattern = {'*.go'},
+vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
+	pattern = { '*.go' },
 	callback = function() vim.fn.CocAction('runCommand', 'editor.action.organizeImport') end
 })
 
 -- Terminal handling autocmds
-vim.api.nvim_create_autocmd({'TermOpen'}, {
+vim.api.nvim_create_autocmd({ 'TermOpen' }, {
 	callback = function()
 		vim.opt.number = false
 		vim.opt.relativenumber = false
 		vim.cmd('startinsert')
 	end
 })
-vim.api.nvim_create_autocmd({'BufEnter'}, {
-	pattern = {'term://*'},
+vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+	pattern = { 'term://*' },
 	command = 'startinsert'
 })
 
 -- Statusline
 vim.opt.showmode = false -- Mode info is contained in statusline
-require'lualine'.setup {
+require 'lualine'.setup {
 	options = {
 		theme = 'onedark',
 		section_separators = '',
@@ -294,12 +295,12 @@ require'lualine'.setup {
 		globalstatus = true
 	},
 	sections = {
-		lualine_a = {'mode'},
-		lualine_b = {'filename'},
-		lualine_c = {'branch', 'diff'},
-		lualine_x = {'g:coc_status', 'filetype'},
-		lualine_y = {'location'},
-		lualine_z = {'progress'}
+		lualine_a = { 'mode' },
+		lualine_b = { 'filename' },
+		lualine_c = { 'branch', 'diff' },
+		lualine_x = { 'g:coc_status', 'filetype' },
+		lualine_y = { 'location' },
+		lualine_z = { 'progress' }
 	},
 	tabline = {
 		lualine_a = {
@@ -317,9 +318,17 @@ require'lualine'.setup {
 		'toggleterm'
 	}
 }
-END
 
-" Config file highlighting types
-autocmd BufEnter mopidy/*.conf set filetype=dosini
-autocmd BufEnter mpv/mpv.conf set filetype=dosini
-autocmd BufEnter my_timers/*.conf set filetype=sql
+-- Config file highlighting types
+vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+	pattern = 'mopidy/*.conf',
+	command = 'set filetype=dosini'
+})
+vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+	pattern = 'mpv/mpv.conf',
+	command = 'set filetype=dosini'
+})
+vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+	pattern = 'my_timers/*.conf',
+	command = 'set filetype=sql'
+})
