@@ -204,7 +204,8 @@ require 'nvim-tree'.setup {
 		show_on_open_dirs = false
 	},
 	git = {
-		show_on_open_dirs = false
+		show_on_open_dirs = false,
+		ignore = false
 	},
 	renderer = {
 		icons = {
