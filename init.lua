@@ -79,6 +79,7 @@ vim.api.nvim_create_autocmd({ 'TermOpen' }, {
 	callback = function()
 		vim.opt.number = false
 		vim.opt.relativenumber = false
+		vim.opt.winfixheight = true
 		vim.cmd('startinsert')
 	end
 })
@@ -219,6 +220,9 @@ require 'nvim-tree'.setup {
 				}
 			}
 		}
+	},
+	filters = {
+		custom = { '.git' }
 	},
 	on_attach = nvim_tree_on_attach
 }
