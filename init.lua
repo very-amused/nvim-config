@@ -95,7 +95,7 @@ map('t', '<M-l>', '<C-\\><C-n><C-w>l')
 -- Close window
 nmap('<M-w>', '<Cmd>q<CR>')
 -- Delete buffer
-nmap('<M-W>', '<Cmd>bdelete<CR>')
+nmap('<M-W>', '<Cmd>%bd<CR>')
 
 -- Tab navigation
 nmap('<M-[>', '<Cmd>tabprevious<CR>')
@@ -161,6 +161,25 @@ require 'lualine'.setup {
 }
 
 -- nvim-tree
+local function open_nvim_tree(data)
+	-- buffer is a directory
+	local directory = vim.fn.isdirectory(data.file) == 1
+
+	if not directory then
+		return
+	end
+
+	-- Create a new, empty buffer
+	vim.cmd.enew()
+	-- Wipe directory buffer
+	vim.cmd.bw(data.buf)
+	-- cd to directory
+	vim.cmd.cd(data.file)
+	-- open nvim-tree
+	require 'nvim-tree.api'.tree.open()
+end
+vim.api.nvim_create_autocmd({ 'VimEnter' }, { callback = open_nvim_tree })
+
 local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :h nvim-tree
 	local api = require 'nvim-tree.api'
 	local function opts(desc)
@@ -186,6 +205,7 @@ local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :
 end
 
 require 'nvim-tree'.setup {
+	hijack_netrw = false,
 	update_focused_file = {
 		enable = true
 	},
