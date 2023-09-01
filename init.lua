@@ -67,6 +67,7 @@ nmap('<M-h>', '<C-w>h')
 nmap('<M-j>', '<C-w>j')
 nmap('<M-k>', '<C-w>k')
 nmap('<M-l>', '<C-w>l')
+nmap('<M-r>', '<C-w>r')
 -- Creating splits
 nmap('<M-H>', '<Cmd>abo vnew<CR>')
 nmap('<M-J>', '<Cmd>bel new<CR>')
@@ -74,7 +75,11 @@ nmap('<M-K>', '<Cmd>abo new<CR>')
 nmap('<M-L>', '<Cmd>bel vnew<CR>')
 
 -- Terminal handling
-nmap('<C-x>', '<Cmd>15new +terminal<CR>')
+local term_vsize = 15
+nmap('<C-x>', string.format('<Cmd>%dnew +terminal<CR>', term_vsize))
+-- If a terminal's height ever gets changed by moving around other windows,
+-- it can easily be reset with C-x when in terminal mode
+map('t', '<C-x>', string.format('<C-\\><C-n><Cmd>resize %d<CR>', term_vsize))
 vim.api.nvim_create_autocmd({ 'TermOpen' }, {
 	callback = function()
 		vim.opt.number = false
@@ -87,6 +92,7 @@ vim.api.nvim_create_autocmd({ 'BufEnter' }, {
 	pattern = { 'term://*' },
 	command = 'startinsert'
 })
+
 -- Automatically switch to normal mode to move out of terminals
 map('t', '<M-h>', '<C-\\><C-n><C-w>h')
 map('t', '<M-j>', '<C-\\><C-n><C-w>j')
@@ -94,6 +100,8 @@ map('t', '<M-k>', '<C-\\><C-n><C-w>k')
 map('t', '<M-l>', '<C-\\><C-n><C-w>l')
 -- Close window
 nmap('<M-w>', '<Cmd>q<CR>')
+-- Close terminal (TODO: show confirmation prompt when a process is running)
+map('t', '<C-n>', '<C-\\><C-n>')
 -- Delete buffer
 nmap('<M-W>', '<Cmd>%bd<CR>')
 
@@ -202,6 +210,8 @@ local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :
 	nmap('s', api.node.open.horizontal, opts('Open: Horizontal Split'))
 	nmap('v', api.node.open.vertical, opts('Open: Vertical Split'))
 	nmap('t', api.node.open.tab, opts('Open: New Tab'))
+	-- New terminal command assumes tree is open to the left
+	nmap('<C-x>', string.format('<C-w><C-l><Cmd>%dnew +terminal<CR>', term_vsize), opts('Open New Terminal'))
 end
 
 require 'nvim-tree'.setup {
@@ -219,6 +229,11 @@ require 'nvim-tree'.setup {
 		width = 30,
 		relativenumber = true
 	},
+	ui = {
+		confirm = {
+			remove = false
+		}
+	},
 	diagnostics = {
 		enable = true,
 		show_on_dirs = true,
@@ -230,7 +245,7 @@ require 'nvim-tree'.setup {
 	},
 	renderer = {
 		icons = {
-			git_placement = "after",
+			git_placement = "before",
 			padding = " ",
 			glyphs = {
 				git = {
@@ -242,7 +257,7 @@ require 'nvim-tree'.setup {
 		}
 	},
 	filters = {
-		custom = { '.git' }
+		custom = { '^\\.git$' }
 	},
 	on_attach = nvim_tree_on_attach
 }

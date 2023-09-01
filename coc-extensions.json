@@ -1,4 +1,5 @@
 [
+  "coc-clangd",
   "coc-eslint",
   "coc-go",
   "coc-json",

@@ -15,11 +15,21 @@
   "list.floatPreview": true,
   "json.validate.enable": false,
   "python.formatting.provider": "yapf",
+  "rust-analyzer.server.path": "/usr/bin/rust-analyzer",
+  "python.analysis.extraPaths": [
+    "/usr/lib/obs-scripting/"
+  ],
   "[rust]": {
     "coc.preferences.formatOnSave": false
   },
   "[python]": {
     "inlayHint.enable": false,
+    "coc.preferences.formatOnSave": false
+  },
+  "[c]": {
+    "coc.preferences.formatOnSave": false
+  },
+  "[cpp]": {
     "coc.preferences.formatOnSave": false
   },
   "Lua.diagnostics.globals": [
