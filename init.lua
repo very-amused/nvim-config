@@ -47,11 +47,20 @@ require 'paq' {
 	-- Yes
 	'folke/trouble.nvim',
 	-- Syntax highlighting
-	{ 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
+	{ 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
 	-- Fuzzy finder
 	{ 'ibhagwan/fzf-lua',                branch = 'main' },
-	-- Completion/snippets
-	{ 'neoclide/coc.nvim',               branch = 'release' },
+	--{ 'neoclide/coc.nvim',               branch = 'release' },
+	-- LSP integration
+	'neovim/nvim-lspconfig',
+	-- Completion
+	'hrsh7th/cmp-nvim-lsp',
+	'hrsh7th/cmp-buffer',
+	'hrsh7th/cmp-path',
+	'hrsh7th/cmp-cmdline',
+	'hrsh7th/nvim-cmp',
+	-- LSP lualine component
+	'nvim-lua/lsp-status.nvim',
 	-- Git integration
 	'lewis6991/gitsigns.nvim',
 	'tpope/vim-fugitive'
@@ -127,6 +136,37 @@ nmap('<M-c>', '<Cmd>tabclose<CR>')
 
 -- Begin plugin configs
 
+-- lspconfig
+local lspconfig = require'lspconfig'
+local lsp_status = require'lsp-status'
+lsp_status.register_progress()
+lsp_status.config{
+	status_symbol = ''
+}
+
+lspconfig.gopls.setup{
+	on_attach = lsp_status.on_attach,
+	capabilities = lsp_status.capabilities
+}
+lspconfig.bashls.setup{
+	on_attach = lsp_status.on_attach,
+	capabilities = lsp_status.capabilities
+}
+lspconfig.rust_analyzer.setup{
+	on_attach = lsp_status.on_attach,
+	capabilities = lsp_status.capabilities
+}
+
+-- cmp Autocompletion
+local cmp = require'cmp'
+cmp.setup{
+	sources = cmp.config.sources{
+		{ name = 'nvim_lsp' },
+		{ name = 'buffer' },
+		{ name = 'path' },
+	}
+}
+
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
 	-- Onedark theme config
@@ -136,7 +176,14 @@ if not (os.getenv('TERM') == 'linux') then
 	require 'onedark'.load()
 end
 
--- Statusline
+-- Some LSP servers have issues with backup files
+vim.opt.backup = false
+vim.opt.writebackup = false
+
+-- Always show the sign column to avoid text shifts
+vim.opt.signcolumn = 'yes'
+
+-- Lualine
 vim.opt.showmode = false -- Mode info is contained in statusline
 require 'lualine'.setup {
 	options = {
@@ -149,8 +196,8 @@ require 'lualine'.setup {
 		lualine_a = { 'mode' },
 		lualine_b = { 'filename' },
 		lualine_c = { 'branch', 'diff' },
-		lualine_x = { 'g:coc_status', 'filetype' },
-		lualine_y = { 'location' },
+		lualine_x = { 'require"lsp-status".status()' },
+		lualine_y = { 'filetype', 'location' },
 		lualine_z = { 'progress' }
 	},
 	tabline = {
@@ -293,69 +340,6 @@ vim.g.mapleader = " "
 nmap('<leader>/', '<Cmd>FzfLua files<CR>')
 nmap('<leader>?', '<Cmd>FzfLua grep_project<CR>')
 
--- coc.nvim
-nmap('<M-n>', '<Cmd>CocDisable<CR>')
-nmap('<M-N>', '<Cmd>CocEnable<CR>')
-function _G.check_back_space()
-	local col = vim.fn.col('.') - 1
-	return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
-end
-
--- Use Tab for trigger completion with characters ahead and navigate
--- NOTE: There's always a completion item selected by default, you may want to enable
--- no select by setting `"suggest.noselect": true` in your configuration file
--- NOTE: Use command ':verbose imap <tab>' to make sure Tab is not mapped by
--- other plugins before putting this into your config
-local coc_map_opts = { silent = true, noremap = true, expr = true, replace_keycodes = false }
-map("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()',
-	coc_map_opts)
-map("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], coc_map_opts)
-
--- Make <CR> to accept selected completion item or notify coc.nvim to format
--- <C-g>u breaks current undo, please make your own choice
-map("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], coc_map_opts)
-
--- Use K to show documentation in preview window
-function _G.show_docs()
-	local cw = vim.fn.expand('<cword>')
-	if vim.fn.index({ 'vim', 'help' }, vim.bo.filetype) >= 0 then
-		vim.api.nvim_command('h ' .. cw)
-	elseif vim.api.nvim_eval('coc#rpc#ready()') then
-		vim.fn.CocActionAsync('doHover')
-	else
-		vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
-	end
-end
-
-nmap("K", '<CMD>lua _G.show_docs()<CR>', { silent = true })
-
--- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
-nmap("<M-,>", "<Plug>(coc-diagnostic-prev)", { silent = true })
-nmap("<M-.>", "<Plug>(coc-diagnostic-next)", { silent = true })
-
--- GoTo code navigation
-nmap("gd", "<Plug>(coc-definition)", { silent = true })
-nmap("gy", "<Plug>(coc-type-definition)", { silent = true })
-nmap("gi", "<Plug>(coc-implementation)", { silent = true })
-nmap("gr", "<Plug>(coc-references)", { silent = true })
-
--- Symbol renaming
-nmap('<F2>', '<Plug>(coc-rename)', { silent = true })
-
-
-
--- Some LSP servers have issues with backup files
-vim.opt.backup = false
-vim.opt.writebackup = false
-
--- Always show the sign column to avoid text shifts
-vim.opt.signcolumn = 'yes'
-
--- Organize go imports on save
-vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
-	pattern = { '*.go' },
-	callback = function() vim.fn.CocAction('runCommand', 'editor.action.organizeImport') end
-})
 
 -- Gitsigns
 local function gitsigns_on_attach(bufnr)
