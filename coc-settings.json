@@ -11,7 +11,7 @@
   "pylsp.plugins.pycodestyle.enabled": false,
   "coc.preferences.jumpCommand": "tabnew",
   "typescript.format.enable": false,
-  "eslint.autoFixOnSave": true,
+  "eslint.autoFixOnSave": false,
   "list.floatPreview": true,
   "json.validate.enable": false,
   "python.formatting.provider": "yapf",
@@ -19,6 +19,17 @@
   "python.analysis.extraPaths": [
     "/usr/lib/obs-scripting/"
   ],
+  "languageserver": {
+    "efm": {
+      "command": "efm-langserver",
+      "args": [],
+      "filetypes": [
+        "go"
+      ],
+      "trace.server": "verbose"
+    }
+  },
+  "pullDiagnostic.workspace": true,
   "[rust]": {
     "coc.preferences.formatOnSave": false
   },
@@ -30,6 +41,15 @@
     "coc.preferences.formatOnSave": false
   },
   "[cpp]": {
+    "coc.preferences.formatOnSave": false
+  },
+  "[ts]": {
+    "coc.preferences.formatOnSave": false
+  },
+  "[json]": {
+    "coc.preferences.formatOnSave": false
+  },
+  "[jsonc]": {
     "coc.preferences.formatOnSave": false
   },
   "Lua.diagnostics.globals": [

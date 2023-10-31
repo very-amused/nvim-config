@@ -44,6 +44,8 @@ require 'paq' {
 	-- File manager
 	'nvim-tree/nvim-web-devicons',
 	'nvim-tree/nvim-tree.lua',
+	-- Yes
+	'folke/trouble.nvim',
 	-- Syntax highlighting
 	{ 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
 	-- Fuzzy finder
@@ -271,12 +273,12 @@ require 'nvim-treesitter.configs'.setup {
 		'c', 'comment', 'cpp', 'css',
 		'go', 'gomod',
 		'html', 'http',
-		'java', 'javascript', 'jsdoc', 'json',
+		'java', 'javascript', 'jsdoc', 'json', 'jsonc',
 		'latex', 'lua',
-		'make',
+		'make', 'markdown', 'markdown_inline',
 		'python',
 		'regex', 'rust',
-		'scss', 'sql',
+		'scss', 'sql', 'svelte',
 		'toml', 'typescript',
 		'vim',
 		'yaml' },
@@ -327,7 +329,6 @@ end
 
 nmap("K", '<CMD>lua _G.show_docs()<CR>', { silent = true })
 
--- Use `[g` and `]g` to navigate diagnostics
 -- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
 nmap("<M-,>", "<Plug>(coc-diagnostic-prev)", { silent = true })
 nmap("<M-.>", "<Plug>(coc-diagnostic-next)", { silent = true })
@@ -398,3 +399,6 @@ vim.api.nvim_create_autocmd({ 'BufEnter' }, {
 	pattern = 'my_timers/*.conf',
 	command = 'set filetype=sql'
 })
+
+-- Trouble
+require 'trouble'.setup {}
