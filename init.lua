@@ -44,7 +44,7 @@ require 'paq' {
 	-- File manager
 	'nvim-tree/nvim-web-devicons',
 	'nvim-tree/nvim-tree.lua',
-	-- Yes
+	-- Git integration
 	'folke/trouble.nvim',
 	-- Syntax highlighting
 	{ 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
@@ -61,6 +61,8 @@ require 'paq' {
 	'hrsh7th/nvim-cmp',
 	-- LSP lualine component
 	'nvim-lua/lsp-status.nvim',
+	-- LSP Symbols
+	'simrat39/symbols-outline.nvim',
 	-- Git integration
 	'lewis6991/gitsigns.nvim',
 	'tpope/vim-fugitive'
@@ -144,18 +146,55 @@ lsp_status.config{
 	status_symbol = ''
 }
 
-lspconfig.gopls.setup{
-	on_attach = lsp_status.on_attach,
-	capabilities = lsp_status.capabilities
+local lspconfig_langs = {
+	'gopls',
+	{ name = 'bashls', status = false },
+	'rust_analyzer',
+	'clangd',
+	'pylsp'
 }
-lspconfig.bashls.setup{
-	on_attach = lsp_status.on_attach,
-	capabilities = lsp_status.capabilities
-}
-lspconfig.rust_analyzer.setup{
-	on_attach = lsp_status.on_attach,
-	capabilities = lsp_status.capabilities
-}
+
+for _, lang in ipairs(lspconfig_langs) do
+	if type(lang) == 'string' then
+		lspconfig[lang].setup{
+			on_attach = lsp_status.on_attach,
+			capabilities = lsp_status.capabilities
+		}
+	else
+		local opts = {}
+		if lang.status then
+			opts.on_attach = lsp_status.on_attach
+			opts.capabilities = lsp_status.capabilities
+		end
+		lspconfig[lang.name].setup(opts)
+	end
+end
+
+vim.api.nvim_create_autocmd('LspAttach', {
+	group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+	callback = function(ev)
+		local opts = { buffer = ev.buf, silent = true }
+		-- Hover
+		nmap('K', vim.lsp.buf.hover, opts)
+
+		-- Code navigation
+		nmap('gd', vim.lsp.buf.definition, opts)
+		nmap('gD', vim.lsp.buf.declaration, opts)
+		nmap('gy', vim.lsp.buf.type_definition, opts)
+		nmap('gi', vim.lsp.buf.implementation, opts)
+		nmap('gr', vim.lsp.buf.references, opts)
+
+		-- Symbol renaming
+		nmap('<leader>rn', vim.lsp.buf.rename, opts)
+
+		-- Diagnostic navigation
+		nmap('<M-,>', vim.diagnostic.goto_prev, opts)
+		nmap('<M-.>', vim.diagnostic.goto_next, opts)
+
+		-- Code outline
+		nmap('<leader>go', '<Cmd>SymbolsOutline<CR>')
+	end
+})
 
 -- cmp Autocompletion
 local cmp = require'cmp'
@@ -164,8 +203,22 @@ cmp.setup{
 		{ name = 'nvim_lsp' },
 		{ name = 'buffer' },
 		{ name = 'path' },
+	},
+	mapping = cmp.mapping.preset.insert{
+		['<Tab>'] = cmp.mapping.select_next_item(),
+		['<S-Tab>'] = cmp.mapping.select_prev_item(),
+		['<CR>'] = cmp.mapping.confirm{ select = false }
 	}
 }
+
+-- symbol outline
+require 'symbols-outline'.setup{
+	width = 10,
+	show_guides = false,
+	show_symbol_details = false,
+	wrap = true
+}
+
 
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
