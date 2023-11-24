@@ -50,7 +50,6 @@ require 'paq' {
 	{ 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
 	-- Fuzzy finder
 	{ 'ibhagwan/fzf-lua',                branch = 'main' },
-	--{ 'neoclide/coc.nvim',               branch = 'release' },
 	-- LSP integration
 	'neovim/nvim-lspconfig',
 	-- Completion
@@ -193,6 +192,19 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 		-- Code outline
 		nmap('<leader>go', '<Cmd>SymbolsOutline<CR>')
+
+		-- Apply formatting
+		nmap('<leader>f', function()
+			vim.lsp.buf.format{ async = true }
+		end)
+	end
+})
+
+-- Enable autoformatting for certain langs
+vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
+	pattern = { '*.go' },
+	callback = function()
+		vim.lsp.buf.format{ async = false }
 	end
 })
 
