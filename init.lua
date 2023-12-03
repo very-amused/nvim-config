@@ -58,6 +58,7 @@ require 'paq' {
 	'hrsh7th/cmp-path',
 	'hrsh7th/cmp-cmdline',
 	'hrsh7th/nvim-cmp',
+	'windwp/nvim-autopairs',
 	-- LSP lualine component
 	'nvim-lua/lsp-status.nvim',
 	-- LSP Symbols
@@ -138,10 +139,10 @@ nmap('<M-c>', '<Cmd>tabclose<CR>')
 -- Begin plugin configs
 
 -- lspconfig
-local lspconfig = require'lspconfig'
-local lsp_status = require'lsp-status'
+local lspconfig = require 'lspconfig'
+local lsp_status = require 'lsp-status'
 lsp_status.register_progress()
-lsp_status.config{
+lsp_status.config {
 	status_symbol = ''
 }
 
@@ -149,18 +150,23 @@ local lspconfig_langs = {
 	'gopls',
 	{ name = 'bashls', status = false },
 	'rust_analyzer',
-	'clangd',
+	{
+		name = 'clangd',
+		opts = {
+			cmd = { 'clangd', '--clang-tidy' }
+		}
+	},
 	'pylsp'
 }
 
 for _, lang in ipairs(lspconfig_langs) do
 	if type(lang) == 'string' then
-		lspconfig[lang].setup{
+		lspconfig[lang].setup {
 			on_attach = lsp_status.on_attach,
 			capabilities = lsp_status.capabilities
 		}
 	else
-		local opts = {}
+		local opts = (lang.opts ~= nil) and lang.opts or {}
 		if lang.status then
 			opts.on_attach = lsp_status.on_attach
 			opts.capabilities = lsp_status.capabilities
@@ -195,7 +201,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 		-- Apply formatting
 		nmap('<leader>f', function()
-			vim.lsp.buf.format{ async = true }
+			vim.lsp.buf.format { async = true }
 		end)
 	end
 })
@@ -204,27 +210,38 @@ vim.api.nvim_create_autocmd('LspAttach', {
 vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
 	pattern = { '*.go' },
 	callback = function()
-		vim.lsp.buf.format{ async = false }
+		vim.lsp.buf.format { async = false }
 	end
 })
+-- Handle trailing whitespace
+vim.cmd 'match TrailingWhitespace /\\S\\zs\\s\\+$/'
+vim.api.nvim_create_autocmd({ 'ColorScheme' }, {
+	command = 'highlight TrailingWhitespace ctermbg=red guibg=red'
+})
 
--- cmp Autocompletion
-local cmp = require'cmp'
-cmp.setup{
-	sources = cmp.config.sources{
+-- cmp and autopairs Autocompletion
+local cmp = require 'cmp'
+local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
+local autopairs = require 'nvim-autopairs'
+autopairs.setup {}
+cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
+cmp.setup {
+	sources = cmp.config.sources {
 		{ name = 'nvim_lsp' },
 		{ name = 'buffer' },
 		{ name = 'path' },
 	},
-	mapping = cmp.mapping.preset.insert{
+	mapping = cmp.mapping.preset.insert {
 		['<Tab>'] = cmp.mapping.select_next_item(),
 		['<S-Tab>'] = cmp.mapping.select_prev_item(),
-		['<CR>'] = cmp.mapping.confirm{ select = false }
+		['<C-Space>'] = cmp.mapping.complete(),
+		['<C-e>'] = cmp.mapping.abort(),
+		['<CR>'] = cmp.mapping.confirm { select = true }
 	}
 }
 
 -- symbol outline
-require 'symbols-outline'.setup{
+require 'symbols-outline'.setup {
 	width = 10,
 	show_guides = false,
 	show_symbol_details = false,
@@ -318,7 +335,8 @@ local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :
 	nmap('pp', api.fs.paste, opts('Paste'))
 	nmap('dd', api.fs.cut, opts('Cut'))
 	nmap('dD', api.fs.remove, opts('Delete'))
-	nmap('cw', api.fs.rename, opts('Rename'))
+	nmap('cw', api.fs.rename_sub, opts('Rename'))
+	nmap('cW', api.fs.rename, opts('Rename with Filename'))
 	nmap('<M-,>', api.node.navigate.diagnostics.prev, opts('Prev Diagnostic'))
 	nmap('<M-.>', api.node.navigate.diagnostics.next, opts('Next Diagnostic'))
 	nmap('s', api.node.open.horizontal, opts('Open: Horizontal Split'))
@@ -326,12 +344,22 @@ local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :
 	nmap('t', api.node.open.tab, opts('Open: New Tab'))
 	-- New terminal command assumes tree is open to the left
 	nmap('<C-x>', string.format('<C-w><C-l><Cmd>%dnew +terminal<CR>', term_vsize), opts('Open New Terminal'))
+	nmap('<C-t>', api.tree.change_root_to_node, opts('Change Root to Parent'))
 end
 
 require 'nvim-tree'.setup {
 	hijack_netrw = false,
+	sync_root_with_cwd = false,
+	select_prompts = true,
 	update_focused_file = {
 		enable = true
+	},
+	actions = {
+		use_system_clipboard = true,
+		change_dir = {
+			enable = true,
+			global = true
+		}
 	},
 	tab = {
 		sync = {
