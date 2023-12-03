@@ -38,7 +38,8 @@ end
 require 'paq' {
 	'savq/paq-nvim',
 	-- Color theme
-	'navarasu/onedark.nvim',
+	--'navarasu/onedark.nvim',
+	'folke/tokyonight.nvim',
 	-- Statusline
 	'nvim-lualine/lualine.nvim',
 	-- File manager
@@ -190,7 +191,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 		nmap('gr', vim.lsp.buf.references, opts)
 
 		-- Symbol renaming
-		nmap('<leader>rn', vim.lsp.buf.rename, opts)
+		nmap('<leader>r', vim.lsp.buf.rename, opts)
 
 		-- Diagnostic navigation
 		nmap('<M-,>', vim.diagnostic.goto_prev, opts)
@@ -203,6 +204,14 @@ vim.api.nvim_create_autocmd('LspAttach', {
 		nmap('<leader>f', function()
 			vim.lsp.buf.format { async = true }
 		end)
+		-- Apply quickfix
+		local function quickfix()
+			vim.lsp.buf.code_action {
+				filter = function(a) return a.isPreferred end,
+				apply = true
+			}
+		end
+		nmap('<leader>qf', quickfix, opts)
 	end
 })
 
@@ -252,10 +261,10 @@ require 'symbols-outline'.setup {
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
 	-- Onedark theme config
-	require 'onedark'.setup {
-		style = 'deep'
+	require 'tokyonight'.setup {
+		style = 'night'
 	}
-	require 'onedark'.load()
+	vim.cmd 'colorscheme tokyonight-night'
 end
 
 -- Some LSP servers have issues with backup files
@@ -269,7 +278,7 @@ vim.opt.signcolumn = 'yes'
 vim.opt.showmode = false -- Mode info is contained in statusline
 require 'lualine'.setup {
 	options = {
-		theme = 'onedark',
+		theme = 'tokyonight',
 		section_separators = '',
 		component_separators = '',
 		globalstatus = true
