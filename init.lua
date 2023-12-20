@@ -38,8 +38,8 @@ end
 require 'paq' {
 	'savq/paq-nvim',
 	-- Color theme
-	--'navarasu/onedark.nvim',
-	'folke/tokyonight.nvim',
+	'navarasu/onedark.nvim',
+	--'folke/tokyonight.nvim',
 	-- Statusline
 	'nvim-lualine/lualine.nvim',
 	-- File manager
@@ -147,8 +147,43 @@ lsp_status.config {
 	status_symbol = ''
 }
 
+local function gopls_organize_imports(buf, preflight)
+	local offset_encoding = vim.lsp.util._get_offset_encoding(buf)
+	local params = vim.lsp.util.make_range_params(nil, offset_encoding)
+	params.context = { only = { 'source.organizeImports' } }
+
+	-- Async preflight request to create import cache
+	if preflight then
+		vim.lsp.buf_request(buf, 'textDocument/codeAction', params)
+		return
+	end
+
+	-- Request done on save, 1s timeout
+	local results = vim.lsp.buf_request_sync(buf, 'textDocument/codeAction', params, 1000)
+	for _, r in pairs(results or {}) do
+		for _, body in pairs(r.result or {}) do
+			if body.edit then
+				vim.lsp.util.apply_workspace_edit(body.edit, offset_encoding)
+			else
+				vim.lsp.buf.execute_command(body.command)
+			end
+		end
+	end
+end
+
+
 local lspconfig_langs = {
-	'gopls',
+	{
+		name = 'gopls',
+		opts = {
+			on_attach = function(client, buf)
+				-- Support lsp_status
+				lsp_status.on_attach(client)
+				-- Preflight source.organizeImports request to create import cache
+				gopls_organize_imports(buf, true)
+			end
+		}
+	},
 	{ name = 'bashls', status = false },
 	'rust_analyzer',
 	{
@@ -169,7 +204,7 @@ for _, lang in ipairs(lspconfig_langs) do
 	else
 		local opts = (lang.opts ~= nil) and lang.opts or {}
 		if lang.status then
-			opts.on_attach = lsp_status.on_attach
+			opts.on_attach = (opts.on_attach ~= nil) and opts.on_attach or lsp_status.on_attach
 			opts.capabilities = lsp_status.capabilities
 		end
 		lspconfig[lang.name].setup(opts)
@@ -218,8 +253,9 @@ vim.api.nvim_create_autocmd('LspAttach', {
 -- Enable autoformatting for certain langs
 vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
 	pattern = { '*.go' },
-	callback = function()
+	callback = function(args)
 		vim.lsp.buf.format { async = false }
+		gopls_organize_imports(args.buf)
 	end
 })
 -- Handle trailing whitespace
@@ -261,10 +297,11 @@ require 'symbols-outline'.setup {
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
 	-- Onedark theme config
-	require 'tokyonight'.setup {
-		style = 'night'
+	onedark = require'onedark'
+	onedark.setup {
+		style = 'deep'
 	}
-	vim.cmd 'colorscheme tokyonight-night'
+	onedark.load()
 end
 
 -- Some LSP servers have issues with backup files
@@ -278,7 +315,7 @@ vim.opt.signcolumn = 'yes'
 vim.opt.showmode = false -- Mode info is contained in statusline
 require 'lualine'.setup {
 	options = {
-		theme = 'tokyonight',
+		theme = 'onedark',
 		section_separators = '',
 		component_separators = '',
 		globalstatus = true
