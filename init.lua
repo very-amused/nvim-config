@@ -33,6 +33,12 @@ end
 local function command(name, cmd)
 	vim.api.nvim_create_user_command(name, cmd, {})
 end
+local function cabbrev(lhs, rhs)
+	-- This API isn't ready yet, so we use vim.cmd for now
+	--vim.keymap.set('ca', name, cmd, { noremap = true, silent = true })
+	vim.cmd(table.concat({'cnoreabbrev', lhs, rhs}, ' '))
+end
+
 
 -- Plugins
 require 'paq' {
@@ -49,6 +55,7 @@ require 'paq' {
 	'folke/trouble.nvim',
 	-- Syntax highlighting
 	{ 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
+	'VebbNix/lf-vim',
 	-- Fuzzy finder
 	{ 'ibhagwan/fzf-lua',                branch = 'main' },
 	-- LSP integration
@@ -82,6 +89,7 @@ nmap('<M-j>', '<C-w>j')
 nmap('<M-k>', '<C-w>k')
 nmap('<M-l>', '<C-w>l')
 nmap('<M-r>', '<C-w>r')
+cabbrev('vresize', 'vert resize')
 -- Creating splits
 nmap('<M-H>', '<Cmd>abo vnew<CR>')
 nmap('<M-J>', '<Cmd>bel new<CR>')
@@ -137,6 +145,9 @@ nmap('<M-}>', '<Cmd>+tabmove<CR>')
 -- Close tabs
 nmap('<M-c>', '<Cmd>tabclose<CR>')
 
+-- Editing mappings
+nmap('cw', 'ciw')
+
 -- Begin plugin configs
 
 -- lspconfig
@@ -147,6 +158,8 @@ lsp_status.config {
 	status_symbol = ''
 }
 
+-- Credit to https://github.com/leonasdev,
+-- this function is based on his work @ https://github.com/neovim/nvim-lspconfig/issues/115#issuecomment-1801096383
 local function gopls_organize_imports(buf, preflight)
 	local offset_encoding = vim.lsp.util._get_offset_encoding(buf)
 	local params = vim.lsp.util.make_range_params(nil, offset_encoding)
@@ -192,7 +205,9 @@ local lspconfig_langs = {
 			cmd = { 'clangd', '--clang-tidy' }
 		}
 	},
-	'pylsp'
+	'pylsp',
+	'tsserver',
+	'eslint'
 }
 
 for _, lang in ipairs(lspconfig_langs) do
@@ -273,7 +288,6 @@ cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 cmp.setup {
 	sources = cmp.config.sources {
 		{ name = 'nvim_lsp' },
-		{ name = 'buffer' },
 		{ name = 'path' },
 	},
 	mapping = cmp.mapping.preset.insert {
@@ -470,7 +484,7 @@ require 'nvim-treesitter.configs'.setup {
 		'yaml' },
 	highlight = {
 		enable = true,
-		additional_vim_regex_highlighting = { "python" }
+		--additional_vim_regex_highlighting = { "python" }
 	}
 }
 
@@ -510,18 +524,18 @@ require 'gitsigns'.setup {
 }
 
 -- Custom file highlighting types
-vim.api.nvim_create_autocmd({ 'BufEnter' }, {
-	pattern = 'mopidy/*.conf',
-	command = 'set filetype=dosini'
-})
-vim.api.nvim_create_autocmd({ 'BufEnter' }, {
-	pattern = 'mpv/mpv.conf',
-	command = 'set filetype=dosini'
-})
-vim.api.nvim_create_autocmd({ 'BufEnter' }, {
-	pattern = 'my_timers/*.conf',
-	command = 'set filetype=sql'
-})
+filetype_overrides = {
+	['*/mopidy/*.conf'] = 'confini',
+	['*/my_timers/*.conf'] = 'sql'
+}
+for _, pattern in ipairs(filetype_overrides) do
+	local filetype = filetype_overrides[pattern]
+	vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+		pattern,
+		command = table.concat({'set filetype=', filetype}, ''),
+		group = 'filetype_overrides'
+	})
+end
 
 -- Trouble
-require 'trouble'.setup {}
+--require 'trouble'.setup {}
