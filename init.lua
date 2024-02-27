@@ -45,6 +45,7 @@ require 'paq' {
 	'savq/paq-nvim',
 	-- Color theme
 	'navarasu/onedark.nvim',
+	'folke/tokyonight.nvim',
 	--'folke/tokyonight.nvim',
 	-- Statusline
 	'nvim-lualine/lualine.nvim',
@@ -100,10 +101,15 @@ nmap('<M-L>', '<Cmd>bel vnew<CR>')
 
 -- Terminal handling
 local term_vsize = 15
-nmap('<C-x>', string.format('<Cmd>%dnew +terminal<CR>', term_vsize))
+local term_vsize_large = 30
+local newterm_template = '<Cmd>%dnew +terminal<CR>'
+nmap('<C-x>', string.format(newterm_template, term_vsize))
+nmap('<C-X>', string.format(newterm_template, term_vsize_large))
 -- If a terminal's height ever gets changed by moving around other windows,
--- it can easily be reset with C-x when in terminal mode
-map('t', '<C-x>', string.format('<C-\\><C-n><Cmd>resize %d<CR>', term_vsize))
+-- it can easily be reset with C-x/C-X when in terminal mode
+local resizeterm_template = '<C-\\><C-n><Cmd>resize %d<CR>'
+map('t', '<C-x>', string.format(resizeterm_template, term_vsize))
+map('t', '<C-x>', string.format(resizeterm_template, term_vsize))
 vim.api.nvim_create_autocmd({ 'TermOpen' }, {
 	callback = function()
 		vim.opt.number = false
@@ -200,7 +206,17 @@ local lspconfig_langs = {
 		}
 	},
 	{ name = 'bashls', status = false },
-	'rust_analyzer',
+	{
+		name = 'rust_analyzer',
+		opts = {
+			on_attach = function(client, buf)
+				-- Support lsp_status
+				lsp_status.on_attach(client)
+				-- Enable inlay hints
+				vim.lsp.inlay_hint.enable(buf)
+			end
+		}
+	},
 	{
 		name = 'clangd',
 		opts = {
@@ -344,12 +360,19 @@ require 'symbols-outline'.setup {
 
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
+	--[[
 	-- Onedark theme config
 	onedark = require'onedark'
 	onedark.setup {
 		style = 'deep'
 	}
 	onedark.load()
+	]]
+	require'tokyonight'.setup {
+		style = 'night',
+		transparent = true
+	}
+	vim.cmd[[colorscheme tokyonight]]
 end
 
 -- Some LSP servers have issues with backup files
@@ -363,7 +386,7 @@ vim.opt.signcolumn = 'yes'
 vim.opt.showmode = false -- Mode info is contained in statusline
 require 'lualine'.setup {
 	options = {
-		theme = 'onedark',
+		theme = 'auto',
 		section_separators = '',
 		component_separators = '',
 		globalstatus = true
@@ -394,6 +417,7 @@ require 'lualine'.setup {
 }
 
 -- nvim-tree
+local nvim_tree_api = require'nvim-tree.api'
 local function open_nvim_tree(data)
 	-- buffer is a directory
 	local directory = vim.fn.isdirectory(data.file) == 1
@@ -409,9 +433,34 @@ local function open_nvim_tree(data)
 	-- cd to directory
 	vim.cmd.cd(data.file)
 	-- open nvim-tree
-	require 'nvim-tree.api'.tree.open()
+	nvim_tree_api.tree.open()
+
+	-- Unfocus tree window
+	vim.cmd[[wincmd p]]
+	-- If README.md exists, open it
+	-- TODO: support for other README formats
+	if vim.fn.filereadable('README.md') then
+		vim.cmd[[
+		e README.md
+		filetype detect
+		]]
+	end
 end
 vim.api.nvim_create_autocmd({ 'VimEnter' }, { callback = open_nvim_tree })
+
+local function close_nvim_tree(data)
+	-- buffer is a directory
+	local directory = vim.fn.isdirectory(data.file) == 1
+
+	if directory
+		or not nvim_tree_api.tree.is_visible()
+		or nvim_tree_api.tree.is_tree_buf() then
+		return
+	end
+
+	nvim_tree_api.tree.close_in_this_tab()
+end
+vim.api.nvim_create_autocmd({ 'BufEnter' }, { callback = close_nvim_tree })
 
 local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :h nvim-tree
 	local api = require 'nvim-tree.api'
