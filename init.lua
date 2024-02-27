@@ -19,7 +19,7 @@ vim.opt.equalalways = false
 vim.opt.hidden = true
 vim.opt.splitbelow = true
 -- Disable syntax highlighting (nvim-treesitter is used)
-vim.opt.syntax = 'off'
+vim.opt.syntax = 'on'
 
 -- Helper fns
 local function map(mode, lhs, rhs, opts)
@@ -67,6 +67,8 @@ require 'paq' {
 	'hrsh7th/cmp-cmdline',
 	'hrsh7th/nvim-cmp',
 	'windwp/nvim-autopairs',
+	{ 'L3MON4D3/LuaSnip', build = 'make install_jsregexp'},
+	'saadparwaiz1/cmp_luasnip',
 	-- LSP lualine component
 	'nvim-lua/lsp-status.nvim',
 	-- LSP Symbols
@@ -207,7 +209,29 @@ local lspconfig_langs = {
 	},
 	'pylsp',
 	'tsserver',
-	'eslint'
+	'eslint',
+	{
+		name = 'html',
+		status = true,
+		-- Enable snippet support with LuaSnip
+		before_setup = function(opts)
+			if opts.capabilities == nil then
+				opts.capabilities = vim.lsp.protocol.make_client_capabilities()
+			end
+
+			local td = opts.capabilities.textDocument
+			if td.completionItem == nil then
+				td.completionItem = {}
+			end
+			td.completionItem.snippetSupport = true
+		end
+	},
+	{
+		name = 'emmet_language_server',
+		opts = {
+			filetypes = { 'html', 'css', 'less', 'sass', 'scss', 'svelte' }
+		}
+	}
 }
 
 for _, lang in ipairs(lspconfig_langs) do
@@ -221,6 +245,9 @@ for _, lang in ipairs(lspconfig_langs) do
 		if lang.status then
 			opts.on_attach = (opts.on_attach ~= nil) and opts.on_attach or lsp_status.on_attach
 			opts.capabilities = lsp_status.capabilities
+		end
+		if lang.before_setup then
+			lang.before_setup(opts)
 		end
 		lspconfig[lang.name].setup(opts)
 	end
@@ -283,19 +310,26 @@ vim.api.nvim_create_autocmd({ 'ColorScheme' }, {
 local cmp = require 'cmp'
 local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
 local autopairs = require 'nvim-autopairs'
+local luasnip = require 'luasnip'
 autopairs.setup {}
 cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 cmp.setup {
 	sources = cmp.config.sources {
 		{ name = 'nvim_lsp' },
 		{ name = 'path' },
+		{ name = 'luasnip' }
+	},
+	snippet = {
+		expand = function(args)
+			luasnip.lsp_expand(args.body)
+		end
 	},
 	mapping = cmp.mapping.preset.insert {
 		['<Tab>'] = cmp.mapping.select_next_item(),
 		['<S-Tab>'] = cmp.mapping.select_prev_item(),
 		['<C-Space>'] = cmp.mapping.complete(),
 		['<C-e>'] = cmp.mapping.abort(),
-		['<CR>'] = cmp.mapping.confirm { select = true }
+		['<CR>'] = cmp.mapping.confirm { select = false }
 	}
 }
 
