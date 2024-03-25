@@ -18,7 +18,6 @@ vim.opt.updatetime = 100
 vim.opt.equalalways = false
 vim.opt.hidden = true
 vim.opt.splitbelow = true
--- Disable syntax highlighting (nvim-treesitter is used)
 vim.opt.syntax = 'on'
 
 -- Helper fns
@@ -76,7 +75,11 @@ require 'paq' {
 	'simrat39/symbols-outline.nvim',
 	-- Git integration
 	'lewis6991/gitsigns.nvim',
-	'tpope/vim-fugitive'
+	'tpope/vim-fugitive',
+	-- Enhanced LaTeX support
+	'lervag/vimtex',
+	'iurimateus/luasnip-latex-snippets.nvim',
+	'kdheepak/cmp-latex-symbols'
 }
 
 -- Manage init.lua
@@ -104,11 +107,9 @@ local term_vsize = 15
 local term_vsize_large = 30
 local newterm_template = '<Cmd>%dnew +terminal<CR>'
 nmap('<C-x>', string.format(newterm_template, term_vsize))
-nmap('<C-X>', string.format(newterm_template, term_vsize_large))
 -- If a terminal's height ever gets changed by moving around other windows,
 -- it can easily be reset with C-x/C-X when in terminal mode
 local resizeterm_template = '<C-\\><C-n><Cmd>resize %d<CR>'
-map('t', '<C-x>', string.format(resizeterm_template, term_vsize))
 map('t', '<C-x>', string.format(resizeterm_template, term_vsize))
 vim.api.nvim_create_autocmd({ 'TermOpen' }, {
 	callback = function()
@@ -247,7 +248,8 @@ local lspconfig_langs = {
 		opts = {
 			filetypes = { 'html', 'css', 'less', 'sass', 'scss', 'svelte' }
 		}
-	}
+	},
+	'texlab'
 }
 
 for _, lang in ipairs(lspconfig_langs) do
@@ -327,13 +329,15 @@ local cmp = require 'cmp'
 local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
 local autopairs = require 'nvim-autopairs'
 local luasnip = require 'luasnip'
+require'luasnip-latex-snippets'.setup{}
 autopairs.setup {}
 cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 cmp.setup {
 	sources = cmp.config.sources {
 		{ name = 'nvim_lsp' },
 		{ name = 'path' },
-		{ name = 'luasnip' }
+		{ name = 'luasnip', option = { show_autosnippets = true } },
+		{ name = 'latex_symbols', option = { strategy = 2 } }
 	},
 	snippet = {
 		expand = function(args)
@@ -370,7 +374,7 @@ if not (os.getenv('TERM') == 'linux') then
 	]]
 	require'tokyonight'.setup {
 		style = 'night',
-		transparent = true
+		transparent = false
 	}
 	vim.cmd[[colorscheme tokyonight]]
 end
@@ -448,11 +452,21 @@ local function open_nvim_tree(data)
 end
 vim.api.nvim_create_autocmd({ 'VimEnter' }, { callback = open_nvim_tree })
 
+local nvim_tree_autohide = false
+nmap('<C-n>', '<Cmd>NvimTreeToggle<CR>')
+nmap('<C-m>', function()
+	nvim_tree_autohide = not nvim_tree_autohide
+	vim.notify(string.format('nvim-tree autohide %s', nvim_tree_autohide and 'enabled' or 'disabled'))
+end)
+
 local function close_nvim_tree(data)
+	if not nvim_tree_autohide then
+		return
+	end
 	-- buffer is a directory
 	local directory = vim.fn.isdirectory(data.file) == 1
 
-	if directory
+	if nvim_tree_autohide and directory
 		or not nvim_tree_api.tree.is_visible()
 		or nvim_tree_api.tree.is_tree_buf() then
 		return
@@ -461,6 +475,7 @@ local function close_nvim_tree(data)
 	nvim_tree_api.tree.close_in_this_tab()
 end
 vim.api.nvim_create_autocmd({ 'BufEnter' }, { callback = close_nvim_tree })
+
 
 local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :h nvim-tree
 	local api = require 'nvim-tree.api'
@@ -547,7 +562,6 @@ require 'nvim-tree'.setup {
 	on_attach = nvim_tree_on_attach
 }
 
-nmap('<C-n>', '<Cmd>NvimTreeToggle<CR>')
 
 -- Treesitter config
 require 'nvim-treesitter.configs'.setup {
@@ -557,7 +571,7 @@ require 'nvim-treesitter.configs'.setup {
 		'go', 'gomod',
 		'html', 'http',
 		'java', 'javascript', 'jsdoc', 'json', 'jsonc',
-		'latex', 'lua',
+		'lua',
 		'make', 'markdown', 'markdown_inline',
 		'python',
 		'regex', 'rust',
@@ -567,6 +581,7 @@ require 'nvim-treesitter.configs'.setup {
 		'yaml' },
 	highlight = {
 		enable = true,
+		disable = { 'latex' }
 		--additional_vim_regex_highlighting = { "python" }
 	}
 }
@@ -619,6 +634,10 @@ for _, pattern in ipairs(filetype_overrides) do
 		group = 'filetype_overrides'
 	})
 end
+
+-- Vimtex
+
+vim.g.vimtex_view_method = 'zathura'
 
 -- Trouble
 --require 'trouble'.setup {}
