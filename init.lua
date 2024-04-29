@@ -45,7 +45,6 @@ require 'paq' {
 	-- Color theme
 	'navarasu/onedark.nvim',
 	'folke/tokyonight.nvim',
-	--'folke/tokyonight.nvim',
 	-- Statusline
 	'nvim-lualine/lualine.nvim',
 	-- File manager
@@ -95,7 +94,8 @@ nmap('<M-j>', '<C-w>j')
 nmap('<M-k>', '<C-w>k')
 nmap('<M-l>', '<C-w>l')
 nmap('<M-r>', '<C-w>r')
-cabbrev('vresize', 'vert resize')
+cabbrev('rs', 'resize')
+cabbrev('vrs', 'vert resize')
 -- Creating splits
 nmap('<M-H>', '<Cmd>abo vnew<CR>')
 nmap('<M-J>', '<Cmd>bel new<CR>')
@@ -214,7 +214,7 @@ local lspconfig_langs = {
 				-- Support lsp_status
 				lsp_status.on_attach(client)
 				-- Enable inlay hints
-				vim.lsp.inlay_hint.enable(buf)
+				vim.lsp.inlay_hint.enable(true)
 			end
 		}
 	},
@@ -364,16 +364,14 @@ require 'symbols-outline'.setup {
 
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
-	--[[
-	-- Onedark theme config
-	onedark = require'onedark'
-	onedark.setup {
-		style = 'deep'
-	}
-	onedark.load()
-	]]
+	-- Tokyonight theme config
 	require'tokyonight'.setup {
 		style = 'night',
+		transparent = false
+	}
+	-- Onedark theme config
+	require'onedark'.setup {
+		style = 'deep',
 		transparent = false
 	}
 	vim.cmd[[colorscheme tokyonight]]
