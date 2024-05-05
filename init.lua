@@ -459,7 +459,7 @@ vim.api.nvim_create_autocmd({ 'VimEnter' }, { callback = open_nvim_tree })
 
 local nvim_tree_autohide = false
 nmap('<C-n>', '<Cmd>NvimTreeToggle<CR>')
-nmap('<C-m>', function()
+nmap('<C-N>', function()
 	nvim_tree_autohide = not nvim_tree_autohide
 	vim.notify(string.format('nvim-tree autohide %s', nvim_tree_autohide and 'enabled' or 'disabled'))
 end)
