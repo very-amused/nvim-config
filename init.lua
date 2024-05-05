@@ -20,6 +20,8 @@ vim.opt.hidden = true
 vim.opt.splitbelow = true
 vim.opt.syntax = 'on'
 
+vim.g.mapleader = " "
+
 -- Helper fns
 local function map(mode, lhs, rhs, opts)
 	local default_opts = { noremap = true, silent = true }
@@ -50,6 +52,8 @@ require 'paq' {
 	-- File manager
 	'nvim-tree/nvim-web-devicons',
 	'nvim-tree/nvim-tree.lua',
+	'ptzz/lf.vim',
+	'voldikss/vim-floaterm',
 	-- Git integration
 	'folke/trouble.nvim',
 	-- Syntax highlighting
@@ -94,7 +98,6 @@ nmap('<M-j>', '<C-w>j')
 nmap('<M-k>', '<C-w>k')
 nmap('<M-l>', '<C-w>l')
 nmap('<M-r>', '<C-w>r')
-cabbrev('rs', 'resize')
 cabbrev('vrs', 'vert resize')
 -- Creating splits
 nmap('<M-H>', '<Cmd>abo vnew<CR>')
@@ -418,6 +421,10 @@ require 'lualine'.setup {
 	}
 }
 
+-- lf.vim
+vim.g['lf_map_keys'] = 0
+nmap('<leader>l', '<Cmd>Lf<CR>')
+
 -- nvim-tree
 local nvim_tree_api = require'nvim-tree.api'
 local function open_nvim_tree(data)
@@ -585,7 +592,6 @@ require 'nvim-treesitter.configs'.setup {
 }
 
 -- FZF
-vim.g.mapleader = " "
 nmap('<leader>/', '<Cmd>FzfLua files<CR>')
 nmap('<leader>?', '<Cmd>FzfLua grep_project<CR>')
 
