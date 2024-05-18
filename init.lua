@@ -70,6 +70,7 @@ require 'paq' {
 	'hrsh7th/cmp-cmdline',
 	'hrsh7th/nvim-cmp',
 	'windwp/nvim-autopairs',
+	-- Snippets
 	{ 'L3MON4D3/LuaSnip', build = 'make install_jsregexp'},
 	'saadparwaiz1/cmp_luasnip',
 	-- LSP lualine component
@@ -179,7 +180,7 @@ local function gopls_organize_imports(buf, preflight)
 
 	-- Async preflight request to create import cache
 	if preflight then
-		vim.lsp.buf_request(buf, 'textDocument/codeAction', params)
+		vim.lsp.buf_request(buf, 'textDocument/codeAction', params, function() end)
 		return
 	end
 
@@ -457,12 +458,7 @@ local function open_nvim_tree(data)
 end
 vim.api.nvim_create_autocmd({ 'VimEnter' }, { callback = open_nvim_tree })
 
-local nvim_tree_autohide = false
 nmap('<C-n>', '<Cmd>NvimTreeToggle<CR>')
-nmap('<C-N>', function()
-	nvim_tree_autohide = not nvim_tree_autohide
-	vim.notify(string.format('nvim-tree autohide %s', nvim_tree_autohide and 'enabled' or 'disabled'))
-end)
 
 local function close_nvim_tree(data)
 	if not nvim_tree_autohide then
