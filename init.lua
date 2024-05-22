@@ -83,7 +83,9 @@ require 'paq' {
 	-- Enhanced LaTeX support
 	'lervag/vimtex',
 	'iurimateus/luasnip-latex-snippets.nvim',
-	'kdheepak/cmp-latex-symbols'
+	'kdheepak/cmp-latex-symbols',
+	-- Misc.
+	'eandrju/cellular-automaton.nvim'
 }
 
 -- Manage init.lua
@@ -100,11 +102,40 @@ nmap('<M-k>', '<C-w>k')
 nmap('<M-l>', '<C-w>l')
 nmap('<M-r>', '<C-w>r')
 cabbrev('vrs', 'vert resize')
+nmap('<M-f>', '<C-f>')
+nmap('<M-b>', '<C-b>')
 -- Creating splits
 nmap('<M-H>', '<Cmd>abo vnew<CR>')
 nmap('<M-J>', '<Cmd>bel new<CR>')
 nmap('<M-K>', '<Cmd>abo new<CR>')
 nmap('<M-L>', '<Cmd>bel vnew<CR>')
+-- Close window
+nmap('<M-w>', '<Cmd>q<CR>')
+
+-- Tab navigation
+nmap('<M-[>', '<Cmd>tabprevious<CR>')
+nmap('<M-]>', '<Cmd>tabnext<CR>')
+nmap('<M-1>', '<Cmd>1tabnext<CR>')
+nmap('<M-2>', '<Cmd>2tabnext<CR>')
+nmap('<M-3>', '<Cmd>3tabnext<CR>')
+nmap('<M-4>', '<Cmd>4tabnext<CR>')
+nmap('<M-5>', '<Cmd>5tabnext<CR>')
+nmap('<M-6>', '<Cmd>6tabnext<CR>')
+nmap('<M-7>', '<Cmd>7tabnext<CR>')
+nmap('<M-8>', '<Cmd>8tabnext<CR>')
+nmap('<M-9>', '<Cmd>9tabnext<CR>')
+-- Move tabs
+nmap('<M-{>', '<Cmd>-tabmove<CR>')
+nmap('<M-}>', '<Cmd>+tabmove<CR>')
+-- Creating tabs
+--nmap('<C-t>', '<Cmd>tabnew %<CR>')
+nmap('<C-t>', function()
+	local pos = vim.api.nvim_win_get_cursor(0)
+	vim.cmd('tabnew %')
+	vim.api.nvim_win_set_cursor(0, pos)
+end)
+-- Close tabs
+nmap('<M-c>', '<Cmd>tabclose<CR>')
 
 -- Terminal handling
 local term_vsize = 15
@@ -133,30 +164,11 @@ map('t', '<M-h>', '<C-\\><C-n><C-w>h')
 map('t', '<M-j>', '<C-\\><C-n><C-w>j')
 map('t', '<M-k>', '<C-\\><C-n><C-w>k')
 map('t', '<M-l>', '<C-\\><C-n><C-w>l')
--- Close window
-nmap('<M-w>', '<Cmd>q<CR>')
 -- Close terminal (TODO: show confirmation prompt when a process is running)
 map('t', '<C-n>', '<C-\\><C-n>')
 -- Delete buffer
 nmap('<M-W>', '<Cmd>%bd<CR>')
 
--- Tab navigation
-nmap('<M-[>', '<Cmd>tabprevious<CR>')
-nmap('<M-]>', '<Cmd>tabnext<CR>')
-nmap('<M-1>', '<Cmd>1tabnext<CR>')
-nmap('<M-2>', '<Cmd>2tabnext<CR>')
-nmap('<M-3>', '<Cmd>3tabnext<CR>')
-nmap('<M-4>', '<Cmd>4tabnext<CR>')
-nmap('<M-5>', '<Cmd>5tabnext<CR>')
-nmap('<M-6>', '<Cmd>6tabnext<CR>')
-nmap('<M-7>', '<Cmd>7tabnext<CR>')
-nmap('<M-8>', '<Cmd>8tabnext<CR>')
-nmap('<M-9>', '<Cmd>9tabnext<CR>')
--- Move tabs
-nmap('<M-{>', '<Cmd>-tabmove<CR>')
-nmap('<M-}>', '<Cmd>+tabmove<CR>')
--- Close tabs
-nmap('<M-c>', '<Cmd>tabclose<CR>')
 
 -- Editing mappings
 nmap('cw', 'ciw')
@@ -325,7 +337,10 @@ vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
 -- Handle trailing whitespace
 vim.cmd 'match TrailingWhitespace /\\S\\zs\\s\\+$/'
 vim.api.nvim_create_autocmd({ 'ColorScheme' }, {
-	command = 'highlight TrailingWhitespace ctermbg=red guibg=red'
+	callback = function()
+		vim.cmd('highlight TrailingWhitespace ctermbg=red guibg=red')
+		vim.cmd('highlight CursorLineNR ctermbg=red')
+	end
 })
 
 -- cmp and autopairs Autocompletion
@@ -503,7 +518,6 @@ local function nvim_tree_on_attach(bufnr) -- on_attach fn, based on example in :
 	nmap('t', api.node.open.tab, opts('Open: New Tab'))
 	-- New terminal command assumes tree is open to the left
 	nmap('<C-x>', string.format('<C-w><C-l><Cmd>%dnew +terminal<CR>', term_vsize), opts('Open New Terminal'))
-	nmap('<C-t>', api.tree.change_root_to_node, opts('Change Root to Parent'))
 end
 
 require 'nvim-tree'.setup {
@@ -639,5 +653,5 @@ end
 
 vim.g.vimtex_view_method = 'zathura'
 
--- Trouble
---require 'trouble'.setup {}
+-- cellular-automaton
+nmap('<leader>m', '<Cmd>CellularAutomaton make_it_rain<CR>')
