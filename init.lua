@@ -128,7 +128,6 @@ nmap('<M-9>', '<Cmd>9tabnext<CR>')
 nmap('<M-{>', '<Cmd>-tabmove<CR>')
 nmap('<M-}>', '<Cmd>+tabmove<CR>')
 -- Creating tabs
---nmap('<C-t>', '<Cmd>tabnew %<CR>')
 nmap('<C-t>', function()
 	local pos = vim.api.nvim_win_get_cursor(0)
 	vim.cmd('tabnew %')
@@ -137,15 +136,21 @@ end)
 -- Close tabs
 nmap('<M-c>', '<Cmd>tabclose<CR>')
 
+-- Saving and Exiting
+nmap('<C-s>', '<Cmd>w<CR>')
+nmap('<C-z>', '<Cmd>q<CR>')
+
 -- Terminal handling
 local term_vsize = 15
 local term_vsize_large = 30
 local newterm_template = '<Cmd>%dnew +terminal<CR>'
 nmap('<C-x>', string.format(newterm_template, term_vsize))
+nmap('<C-c>', '<Cmd>term<CR>')
 -- If a terminal's height ever gets changed by moving around other windows,
 -- it can easily be reset with C-x/C-X when in terminal mode
 local resizeterm_template = '<C-\\><C-n><Cmd>resize %d<CR>'
 map('t', '<C-x>', string.format(resizeterm_template, term_vsize))
+-- Can't do the same for <C-c>  B) for obvious reasons
 vim.api.nvim_create_autocmd({ 'TermOpen' }, {
 	callback = function()
 		vim.opt.number = false
