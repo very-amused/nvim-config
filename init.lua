@@ -109,8 +109,6 @@ nmap('<M-H>', '<Cmd>abo vnew<CR>')
 nmap('<M-J>', '<Cmd>bel new<CR>')
 nmap('<M-K>', '<Cmd>abo new<CR>')
 nmap('<M-L>', '<Cmd>bel vnew<CR>')
--- Close window
-nmap('<M-w>', '<Cmd>q<CR>')
 
 -- Tab navigation
 nmap('<M-[>', '<Cmd>tabprevious<CR>')
@@ -139,6 +137,7 @@ nmap('<M-c>', '<Cmd>tabclose<CR>')
 -- Saving and Exiting
 nmap('<C-s>', '<Cmd>w<CR>')
 nmap('<C-z>', '<Cmd>q<CR>')
+nmap('<M-w>', '<Cmd>q<CR>')
 
 -- Terminal handling
 local term_vsize = 15
@@ -398,7 +397,7 @@ if not (os.getenv('TERM') == 'linux') then
 		style = 'deep',
 		transparent = false
 	}
-	vim.cmd[[colorscheme tokyonight]]
+	vim.cmd[[colorscheme onedark]]
 end
 
 -- Some LSP servers have issues with backup files
