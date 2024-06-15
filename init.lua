@@ -71,8 +71,9 @@ require 'paq' {
 	'hrsh7th/nvim-cmp',
 	'windwp/nvim-autopairs',
 	-- Snippets
-	{ 'L3MON4D3/LuaSnip', build = 'make install_jsregexp'},
 	'saadparwaiz1/cmp_luasnip',
+	'rafamadriz/friendly-snippets',
+	{ 'L3MON4D3/LuaSnip', build = 'make install_jsregexp'},
 	-- LSP lualine component
 	'nvim-lua/lsp-status.nvim',
 	-- LSP Symbols
@@ -353,6 +354,7 @@ local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
 local autopairs = require 'nvim-autopairs'
 local luasnip = require 'luasnip'
 require'luasnip-latex-snippets'.setup{}
+require'luasnip.loaders.from_vscode'.lazy_load()
 autopairs.setup {}
 cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 cmp.setup {
