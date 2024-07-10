@@ -354,7 +354,8 @@ local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
 local autopairs = require 'nvim-autopairs'
 local luasnip = require 'luasnip'
 require'luasnip-latex-snippets'.setup{}
-require'luasnip.loaders.from_vscode'.lazy_load()
+require'luasnip.loaders.from_vscode'.lazy_load() -- Load VSCode-style snippets
+require'luasnip.loaders.from_snipmate'.lazy_load({paths = '~/.config/nvim/snippets'}) -- Load custom snipmate-style snippets
 autopairs.setup {}
 cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 cmp.setup {

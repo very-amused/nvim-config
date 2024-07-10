@@ -1,0 +1,4 @@
+snippet cwr
+	func ${1}(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		user := rctx.GetUser(ctx)
+	}
