@@ -1,4 +1,9 @@
 snippet cwr
 	func ${1}(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		user := rctx.GetUser(ctx)
+		//user := rctx.GetUser(ctx)
+		// TODO
 	}
+
+snippet msgp
+	//go:generate msgp
+	//msgp:tag json

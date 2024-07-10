@@ -84,9 +84,7 @@ require 'paq' {
 	-- Enhanced LaTeX support
 	'lervag/vimtex',
 	'iurimateus/luasnip-latex-snippets.nvim',
-	'kdheepak/cmp-latex-symbols',
-	-- Misc.
-	'eandrju/cellular-automaton.nvim'
+	'kdheepak/cmp-latex-symbols'
 }
 
 -- Clear highlight when escape is pressed
@@ -355,7 +353,10 @@ local autopairs = require 'nvim-autopairs'
 local luasnip = require 'luasnip'
 require'luasnip-latex-snippets'.setup{}
 require'luasnip.loaders.from_vscode'.lazy_load() -- Load VSCode-style snippets
-require'luasnip.loaders.from_snipmate'.lazy_load({paths = '~/.config/nvim/snippets'}) -- Load custom snipmate-style snippets
+function reload_custom_snippets()
+	require'luasnip.loaders.from_snipmate'.lazy_load({paths = '~/.config/nvim/snippets'}) -- Load custom snipmate-style snippets
+end
+reload_custom_snippets()
 autopairs.setup {}
 cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 cmp.setup {
@@ -659,6 +660,3 @@ end
 -- Vimtex
 
 vim.g.vimtex_view_method = 'zathura'
-
--- cellular-automaton
-nmap('<leader>m', '<Cmd>CellularAutomaton make_it_rain<CR>')
