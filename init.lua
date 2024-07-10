@@ -89,10 +89,6 @@ require 'paq' {
 	'eandrju/cellular-automaton.nvim'
 }
 
--- Manage init.lua
-command('Vimrc', 'source ~/.config/nvim/init.lua')
-command('EditVimrc', 'edit ~/.config/nvim/init.lua')
-
 -- Clear highlight when escape is pressed
 nmap('<esc>', '<Cmd>noh<CR><esc>')
 
@@ -177,6 +173,10 @@ nmap('<M-W>', '<Cmd>%bd<CR>')
 
 -- Editing mappings
 nmap('cw', 'ciw')
+nmap('<M-q>', 'q')
+nmap('q', '<Nop>')
+nmap('0', '^') -- Swap 0 and ^
+nmap('^', '0')
 
 -- Begin plugin configs
 
@@ -597,7 +597,7 @@ require 'nvim-treesitter.configs'.setup {
 		'python',
 		'regex', 'rust',
 		'scss', 'sql', 'svelte',
-		'toml', 'typescript',
+		'toml', 'glsl', 'typescript',
 		'vim',
 		'yaml' },
 	highlight = {
