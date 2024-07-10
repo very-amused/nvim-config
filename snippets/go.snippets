@@ -1,9 +1,39 @@
+# New HTTP route w/ ctx
 snippet cwr
 	func ${1}(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		//user := rctx.GetUser(ctx)
 		// TODO
 	}
 
+# Configure messagepack codegen
 snippet msgp
 	//go:generate msgp
 	//msgp:tag json
+
+# Decode request body
+snippet @decode
+	core.Decode(r.Body, ${1}, r.Header.Get("Content-Type"))
+
+# Write HTTPerror to w
+snippet @werr
+	core.WriteError(w, ${1})
+	return
+# Write ServerErrorFrom(err) to w
+snippet @e500
+	core.WriteError500(w, err)
+	return
+# @e500 if err != nil
+snippet @enil
+	if err != nil {
+		core.WriteError500(w, err)
+		return
+	}
+
+# Open SQL transaction
+snippet @tx
+	tx, err := core.DB.Begin()
+	if err != nil {
+		core.WriteError500(w, err)
+		return
+	}
+	defer tx.Rollback()

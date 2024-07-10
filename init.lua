@@ -361,9 +361,9 @@ autopairs.setup {}
 cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 cmp.setup {
 	sources = cmp.config.sources {
+		{ name = 'luasnip', option = { show_autosnippets = true } },
 		{ name = 'nvim_lsp' },
 		{ name = 'path' },
-		{ name = 'luasnip', option = { show_autosnippets = true } },
 		{ name = 'latex_symbols', option = { strategy = 2 } }
 	},
 	snippet = {
