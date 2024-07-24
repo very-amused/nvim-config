@@ -396,12 +396,20 @@ if not (os.getenv('TERM') == 'linux') then
 		style = 'night',
 		transparent = false
 	}
+
 	-- Onedark theme config
 	require'onedark'.setup {
 		style = 'deep',
 		transparent = false
 	}
 	vim.cmd[[colorscheme onedark]]
+
+	function set_transparent(enabled)
+		local colorscheme = vim.api.nvim_exec('colorscheme', true)
+		require'onedark'.setup({ transparent = enabled })
+		-- Reload colorscheme
+		vim.cmd(string.format('colorscheme %s', colorscheme))
+	end
 end
 
 -- Some LSP servers have issues with backup files

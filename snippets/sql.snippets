@@ -1,0 +1,13 @@
+# ID fields + keys
+snippet @id
+	ID bigint unsigned NOT NULL,
+	UserID bigint unsigned NOT NULL,
+	PRIMARY KEY (ID),
+	FOREIGN KEY (UserID) REFERENCES Users(ID) ON DELETE CASCADE
+
+# Encryption fields + keys
+snippet @encryption
+	DataHeader blob NOT NULL,
+	WrappingAlgo varchar(255) NOT NULL,
+	CryptoKey varbinary(512) NOT NULL,
+	FOREIGN KEY (UserID, WrappingAlgo) REFERENCES MasterKeys(UserID, Algorithm) ON DELETE RESTRICT

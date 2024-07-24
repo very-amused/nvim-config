@@ -10,6 +10,9 @@ snippet msgp
 	//go:generate msgp
 	//msgp:tag json
 
+# Encode response body
+snippet @encode
+	core.Encode(w, ${1}, w.Header().Get("Content-Type"))
 # Decode request body
 snippet @decode
 	core.Decode(r.Body, ${1}, r.Header.Get("Content-Type"))
@@ -37,3 +40,17 @@ snippet @tx
 		return
 	}
 	defer tx.Rollback()
+# Open Redlock mutex
+snippet @redlock
+	lock := core.Redlock.NewMutex(fmt.Sprintf("NightCrypt:$1:ID:%d", $2))
+	if err = lock.Lock(); err != nil {
+		core.WriteError500(w, err)
+		return
+	}
+	defer lock.Unlock()
+
+# Append encryption fields to query
+snippet @encryption
+	query.Append("DataHeader", &${1}.Encryption.Header.DataHeader)
+	query.Append("WrappingAlgo", &${1}.Encryption.Header.WrappingAlgo)
+	query.Append("CryptoKey", &${1}.Encryption.Key)
