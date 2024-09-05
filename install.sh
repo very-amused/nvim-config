@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cnf_d="$HOME/.config/nvim"
 install -d $cnf_d
