@@ -163,8 +163,10 @@ map('t', '<M-h>', '<C-\\><C-n><C-w>h')
 map('t', '<M-j>', '<C-\\><C-n><C-w>j')
 map('t', '<M-k>', '<C-\\><C-n><C-w>k')
 map('t', '<M-l>', '<C-\\><C-n><C-w>l')
--- Close terminal (TODO: show confirmation prompt when a process is running)
+-- Enter normal mode from terminal
 map('t', '<C-n>', '<C-\\><C-n>')
+-- Exit terminal
+map('t', '<C-z>', '<C-\\><C-n><Cmd>q<CR>')
 -- Delete buffer
 nmap('<M-W>', '<Cmd>%bd<CR>')
 
@@ -666,5 +668,4 @@ for _, pattern in ipairs(filetype_overrides) do
 end
 
 -- Vimtex
-
 vim.g.vimtex_view_method = 'zathura'
