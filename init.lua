@@ -246,7 +246,7 @@ local lspconfig_langs = {
 		}
 	},
 	'pylsp',
-	'tsserver',
+	'ts_ls',
 	'eslint',
 	{
 		name = 'html',
@@ -353,8 +353,9 @@ local cmp = require 'cmp'
 local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
 local autopairs = require 'nvim-autopairs'
 local luasnip = require 'luasnip'
-require'luasnip-latex-snippets'.setup{}
+luasnip.config.setup{ enable_autosnippets = true } -- required by luasnip-latex-snippets
 require'luasnip.loaders.from_vscode'.lazy_load() -- Load VSCode-style snippets
+require'luasnip-latex-snippets'.setup{ allow_on_markdown = false }
 function reload_custom_snippets()
 	require'luasnip.loaders.from_snipmate'.lazy_load({paths = '~/.config/nvim/snippets'}) -- Load custom snipmate-style snippets
 end
