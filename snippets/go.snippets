@@ -49,8 +49,15 @@ snippet @redlock
 	}
 	defer lock.Unlock()
 
+
 # Append encryption fields to query
 snippet @encryption
 	query.Append("DataHeader", &${1}.Encryption.Header.DataHeader)
 	query.Append("WrappingAlgo", &${1}.Encryption.Header.WrappingAlgo)
 	query.Append("CryptoKey", &${1}.Encryption.Key)
+
+# Log error in tests
+snippet @logerr
+	if err != nil {
+		logErr(t, r, err)
+	}

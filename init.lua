@@ -314,7 +314,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 		nmap('<M-.>', vim.diagnostic.goto_next, opts)
 
 		-- Code outline
-		nmap('<leader>go', '<Cmd>SymbolsOutline<CR>')
+		nmap('<leader>o', '<Cmd>SymbolsOutline<CR>')
 
 		-- Apply formatting
 		nmap('<leader>f', function()
