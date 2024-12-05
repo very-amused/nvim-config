@@ -76,8 +76,6 @@ require 'paq' {
 	{ 'L3MON4D3/LuaSnip', build = 'make install_jsregexp'},
 	-- LSP lualine component
 	'nvim-lua/lsp-status.nvim',
-	-- LSP Symbols
-	'simrat39/symbols-outline.nvim',
 	-- Git integration
 	'lewis6991/gitsigns.nvim',
 	'tpope/vim-fugitive',
@@ -173,8 +171,6 @@ nmap('<M-W>', '<Cmd>%bd<CR>')
 
 -- Editing mappings
 nmap('cw', 'ciw')
-nmap('<M-q>', 'q')
-nmap('q', '<Nop>')
 nmap('0', '^') -- Swap 0 and ^
 nmap('^', '0')
 
@@ -214,14 +210,18 @@ local function gopls_organize_imports(buf, preflight)
 	end
 end
 
+local function default_on_attach(client, buf)
+	-- Support lsp_status
+	lsp_status.on_attach(client)
+end
+
 
 local lspconfig_langs = {
 	{
 		name = 'gopls',
 		opts = {
 			on_attach = function(client, buf)
-				-- Support lsp_status
-				lsp_status.on_attach(client)
+				default_on_attach(client, buf)
 				-- Preflight source.organizeImports request to create import cache
 				gopls_organize_imports(buf, true)
 			end
@@ -232,8 +232,7 @@ local lspconfig_langs = {
 		name = 'rust_analyzer',
 		opts = {
 			on_attach = function(client, buf)
-				-- Support lsp_status
-				lsp_status.on_attach(client)
+				default_on_attach(client, buf)
 				-- Enable inlay hints
 				vim.lsp.inlay_hint.enable(true)
 			end
@@ -276,13 +275,13 @@ local lspconfig_langs = {
 for _, lang in ipairs(lspconfig_langs) do
 	if type(lang) == 'string' then
 		lspconfig[lang].setup {
-			on_attach = lsp_status.on_attach,
+			on_attach = default_on_attach,
 			capabilities = lsp_status.capabilities
 		}
 	else
 		local opts = (lang.opts ~= nil) and lang.opts or {}
 		if lang.status then
-			opts.on_attach = (opts.on_attach ~= nil) and opts.on_attach or lsp_status.on_attach
+			opts.on_attach = (opts.on_attach ~= nil) and opts.on_attach or default_on_attach
 			opts.capabilities = lsp_status.capabilities
 		end
 		if lang.before_setup then
@@ -301,7 +300,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 		-- Code navigation
 		nmap('gd', vim.lsp.buf.definition, opts)
-		nmap('gD', vim.lsp.buf.declaration, opts)
+		nmap('gy', vim.lsp.buf.declaration, opts)
 		nmap('gy', vim.lsp.buf.type_definition, opts)
 		nmap('gi', vim.lsp.buf.implementation, opts)
 		nmap('gr', vim.lsp.buf.references, opts)
@@ -312,9 +311,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
 		-- Diagnostic navigation
 		nmap('<M-,>', vim.diagnostic.goto_prev, opts)
 		nmap('<M-.>', vim.diagnostic.goto_next, opts)
-
-		-- Code outline
-		nmap('<leader>o', '<Cmd>SymbolsOutline<CR>')
 
 		-- Apply formatting
 		nmap('<leader>f', function()
@@ -403,7 +399,7 @@ if not (os.getenv('TERM') == 'linux') then
 	-- Onedark theme config
 	require'onedark'.setup {
 		style = 'deep',
-		transparent = false
+		transparent = true
 	}
 	vim.cmd[[colorscheme onedark]]
 
@@ -624,6 +620,12 @@ require 'nvim-treesitter.configs'.setup {
 nmap('<leader>/', '<Cmd>FzfLua files<CR>')
 nmap('<leader>?', '<Cmd>FzfLua grep_project<CR>')
 
+-- Trouble
+require'trouble'.setup{
+	warn_no_results = false
+}
+nmap('t', '<Cmd>Trouble diagnostics toggle<CR>')
+nmap('<leader>o', '<Cmd>Trouble symbols toggle focus=false<CR>')
 
 -- Gitsigns
 local function gitsigns_on_attach(bufnr)
@@ -645,8 +647,7 @@ local function gitsigns_on_attach(bufnr)
 	nmap('<leader>gu', gs.undo_stage_hunk, opts('Undo Stage Hunk'))
 	nmap('<leader>gS', gs.stage_buffer, opts('Stage Buffer'))
 	nmap('<leader>gp', gs.preview_hunk, opts('Preview Hunk'))
-	nmap('<leader>gd', gs.diffthis, opts('Show Diff'))
-	nmap('<leader>gD', function() gs.diffthis('~') end, opts('Show Diff'))
+	nmap('<leader>gD', gs.diffthis, opts('Show Diff'))
 	nmap('<leader>td', gs.toggle_deleted, opts('Toggle Deleted'))
 end
 
