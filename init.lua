@@ -55,6 +55,9 @@ require 'paq' {
 	'ptzz/lf.vim',
 	'voldikss/vim-floaterm',
 	-- Git integration
+	'tpope/vim-fugitive',
+	'lewis6991/gitsigns.nvim',
+	'sindrets/diffview.nvim',
 	'folke/trouble.nvim',
 	-- Syntax highlighting
 	{ 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
@@ -76,9 +79,6 @@ require 'paq' {
 	{ 'L3MON4D3/LuaSnip', build = 'make install_jsregexp'},
 	-- LSP lualine component
 	'nvim-lua/lsp-status.nvim',
-	-- Git integration
-	'lewis6991/gitsigns.nvim',
-	'tpope/vim-fugitive',
 	-- Enhanced LaTeX support
 	'lervag/vimtex',
 	'iurimateus/luasnip-latex-snippets.nvim',
@@ -627,7 +627,7 @@ require'trouble'.setup{
 nmap('t', '<Cmd>Trouble diagnostics toggle<CR>')
 nmap('<leader>o', '<Cmd>Trouble symbols toggle focus=false<CR>')
 
--- Gitsigns
+-- Git integration (Gitsigns, Diffview)
 local function gitsigns_on_attach(bufnr)
 	local gs = package.loaded.gitsigns
 
@@ -654,6 +654,8 @@ end
 require 'gitsigns'.setup {
 	on_attach = gitsigns_on_attach
 }
+
+nmap('<leader>gv', '<Cmd>DiffviewOpen<CR>')
 
 -- Custom file highlighting types
 filetype_overrides = {
