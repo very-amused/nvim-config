@@ -379,15 +379,6 @@ cmp.setup {
 	}
 }
 
--- symbol outline
-require 'symbols-outline'.setup {
-	width = 10,
-	show_guides = false,
-	show_symbol_details = false,
-	wrap = true
-}
-
-
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
 	-- Tokyonight theme config
@@ -626,6 +617,8 @@ require'trouble'.setup{
 }
 nmap('t', '<Cmd>Trouble diagnostics toggle<CR>')
 nmap('<leader>o', '<Cmd>Trouble symbols toggle focus=false<CR>')
+
+-- Fugitive
 
 -- Git integration (Gitsigns, Diffview)
 local function gitsigns_on_attach(bufnr)
