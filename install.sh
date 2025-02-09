@@ -9,3 +9,5 @@ install -m644 snippets/*.snippets $cnf_d/snippets
 
 install -d $cnf_d/spell
 install -m644 spell/* $cnf_d/spell
+
+install -m644 .editorconfig ~/.editorconfig
