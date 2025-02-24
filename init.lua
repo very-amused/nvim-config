@@ -349,7 +349,7 @@ local cmp = require 'cmp'
 local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
 local autopairs = require 'nvim-autopairs'
 local luasnip = require 'luasnip'
-luasnip.config.setup{ enable_autosnippets = true } -- required by luasnip-latex-snippets
+luasnip.config.setup{ enable_autosnippets = false } -- required by luasnip-latex-snippets
 require'luasnip.loaders.from_vscode'.lazy_load() -- Load VSCode-style snippets
 require'luasnip-latex-snippets'.setup{ allow_on_markdown = false }
 function reload_custom_snippets()
