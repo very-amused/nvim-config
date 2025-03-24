@@ -56,6 +56,13 @@ snippet @encryption
 	query.Append("WrappingAlgo", &${1}.Encryption.Header.WrappingAlgo)
 	query.Append("CryptoKey", &${1}.Encryption.Key)
 
+# Make testing request
+snippet @doreq
+	r, err := DoRequest("${1}", route("${2}"), nil, nil, ${3})
+	if err != nil {
+		logErr(t, r, err)
+	}
+
 # Log error in tests
 snippet @logerr
 	if err != nil {

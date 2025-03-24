@@ -269,7 +269,10 @@ local lspconfig_langs = {
 			filetypes = { 'html', 'css', 'less', 'sass', 'scss', 'svelte' }
 		}
 	},
-	'texlab'
+	'texlab',
+	{
+		name = 'neocmake'
+	}
 }
 
 for _, lang in ipairs(lspconfig_langs) do
@@ -314,7 +317,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 		-- Apply formatting
 		nmap('<leader>f', function()
-			vim.lsp.buf.format { async = true }
+			vim.lsp.buf.format()
 		end)
 		-- Apply quickfix
 		local function quickfix()
@@ -331,7 +334,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
 	pattern = { '*.go' },
 	callback = function(args)
-		vim.lsp.buf.format { async = false }
+		vim.lsp.buf.format()
 		gopls_organize_imports(args.buf)
 	end
 })
@@ -588,7 +591,7 @@ require 'nvim-tree'.setup {
 require 'nvim-treesitter.configs'.setup {
 	ensure_installed = {
 		'bash', 'bibtex',
-		'c', 'comment', 'cpp', 'css',
+		'c', 'comment', 'cpp', 'css', 'cmake',
 		'go', 'gomod',
 		'html', 'http',
 		'java', 'javascript', 'jsdoc', 'json', 'jsonc',
