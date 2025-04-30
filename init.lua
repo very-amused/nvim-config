@@ -155,6 +155,11 @@ vim.api.nvim_create_autocmd({ 'BufEnter' }, {
 	pattern = { 'term://*' },
 	command = 'startinsert'
 })
+-- THE GATES OF HEAVEN HAVE OPENED!!!
+-- Reset the terminal cursor to a vertical bar on exit
+vim.api.nvim_create_autocmd({ 'VimLeave' }, {
+	command = 'set guicursor=a:ver1'
+})
 
 -- Automatically switch to normal mode to move out of terminals
 map('t', '<M-h>', '<C-\\><C-n><C-w>h')
@@ -241,7 +246,7 @@ local lspconfig_langs = {
 	{
 		name = 'clangd',
 		opts = {
-			cmd = { 'clangd', '--clang-tidy' }
+			cmd = { 'clangd', '--clang-tidy', '--function-arg-placeholders=false' }
 		}
 	},
 	'pylsp',
@@ -303,8 +308,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 		-- Code navigation
 		nmap('gd', vim.lsp.buf.definition, opts)
-		nmap('gy', vim.lsp.buf.declaration, opts)
-		nmap('gy', vim.lsp.buf.type_definition, opts)
+		nmap('gD', vim.lsp.buf.declaration, opts)
+		nmap('gD', vim.lsp.buf.type_definition, opts)
 		nmap('gi', vim.lsp.buf.implementation, opts)
 		nmap('gr', vim.lsp.buf.references, opts)
 
@@ -384,16 +389,17 @@ cmp.setup {
 
 -- Don't load onedark in ttys
 if not (os.getenv('TERM') == 'linux') then
+	local default_transparency = true
 	-- Tokyonight theme config
 	require'tokyonight'.setup {
 		style = 'night',
-		transparent = false
+		transparent = default_transparency
 	}
 
 	-- Onedark theme config
 	require'onedark'.setup {
 		style = 'deep',
-		transparent = true
+		transparent = default_transparency
 	}
 	vim.cmd[[colorscheme onedark]]
 
