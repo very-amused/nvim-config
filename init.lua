@@ -77,8 +77,6 @@ require 'paq' {
 	'saadparwaiz1/cmp_luasnip',
 	'rafamadriz/friendly-snippets',
 	{ 'L3MON4D3/LuaSnip', build = 'make install_jsregexp'},
-	-- LSP lualine component
-	'nvim-lua/lsp-status.nvim',
 	-- Enhanced LaTeX support
 	'lervag/vimtex',
 	'iurimateus/luasnip-latex-snippets.nvim',
@@ -183,11 +181,6 @@ nmap('^', '0')
 
 -- lspconfig
 local lspconfig = require 'lspconfig'
-local lsp_status = require 'lsp-status'
-lsp_status.register_progress()
-lsp_status.config {
-	status_symbol = ''
-}
 
 -- Credit to https://github.com/leonasdev,
 -- this function is based on his work @ https://github.com/neovim/nvim-lspconfig/issues/115#issuecomment-1801096383
@@ -214,12 +207,6 @@ local function gopls_organize_imports(buf, preflight)
 		end
 	end
 end
-
-local function default_on_attach(client, buf)
-	-- Support lsp_status
-	lsp_status.on_attach(client)
-end
-
 
 local lspconfig_langs = {
 	{
@@ -275,23 +262,14 @@ local lspconfig_langs = {
 		}
 	},
 	'texlab',
-	{
-		name = 'neocmake'
-	}
+	'mesonlsp'
 }
 
 for _, lang in ipairs(lspconfig_langs) do
 	if type(lang) == 'string' then
-		lspconfig[lang].setup {
-			on_attach = default_on_attach,
-			capabilities = lsp_status.capabilities
-		}
+		lspconfig[lang].setup{}
 	else
 		local opts = (lang.opts ~= nil) and lang.opts or {}
-		if lang.status then
-			opts.on_attach = (opts.on_attach ~= nil) and opts.on_attach or default_on_attach
-			opts.capabilities = lsp_status.capabilities
-		end
 		if lang.before_setup then
 			lang.before_setup(opts)
 		end
@@ -431,7 +409,7 @@ require 'lualine'.setup {
 		lualine_a = { 'mode' },
 		lualine_b = { 'filename' },
 		lualine_c = { 'branch', 'diff' },
-		lualine_x = { 'require"lsp-status".status()' },
+		lualine_x = { 'lsp_status' },
 		lualine_y = { 'filetype', 'location' },
 		lualine_z = { 'progress' }
 	},
