@@ -213,7 +213,6 @@ local lspconfig_langs = {
 		name = 'gopls',
 		opts = {
 			on_attach = function(client, buf)
-				default_on_attach(client, buf)
 				-- Preflight source.organizeImports request to create import cache
 				gopls_organize_imports(buf, true)
 			end
@@ -224,7 +223,6 @@ local lspconfig_langs = {
 		name = 'rust_analyzer',
 		opts = {
 			on_attach = function(client, buf)
-				default_on_attach(client, buf)
 				-- Enable inlay hints
 				vim.lsp.inlay_hint.enable(true)
 			end
@@ -233,7 +231,11 @@ local lspconfig_langs = {
 	{
 		name = 'clangd',
 		opts = {
-			cmd = { 'clangd', '--clang-tidy', '--function-arg-placeholders=false' }
+			cmd = { 'clangd', '--clang-tidy', '--function-arg-placeholders=false' },
+			on_attach = function(client, buf)
+				-- Disable inlay hints
+				vim.lsp.inlay_hint.enable(false)
+			end
 		}
 	},
 	'pylsp',
@@ -284,11 +286,16 @@ vim.api.nvim_create_autocmd('LspAttach', {
 		-- Hover
 		nmap('K', vim.lsp.buf.hover, opts)
 
+		-- Toggle inlay hints
+		nmap('&', function()
+			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+		end, opts)
+
 		-- Code navigation
 		nmap('gd', vim.lsp.buf.definition, opts)
 		nmap('gD', vim.lsp.buf.declaration, opts)
 		nmap('gD', vim.lsp.buf.type_definition, opts)
-		nmap('gi', vim.lsp.buf.implementation, opts)
+		nmap('gy', vim.lsp.buf.implementation, opts)
 		nmap('gr', vim.lsp.buf.references, opts)
 
 		-- Symbol renaming
