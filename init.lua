@@ -130,6 +130,9 @@ nmap('<C-s>', '<Cmd>w<CR>')
 nmap('<C-z>', '<Cmd>q<CR>')
 nmap('<M-w>', '<Cmd>q<CR>')
 
+-- Pull up man page, even when LSP attached
+nmap('<C-k>', '<Cmd>Man<CR>')
+
 -- Terminal handling
 local term_vsize = 15
 local term_vsize_large = 30
