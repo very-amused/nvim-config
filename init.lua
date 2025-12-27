@@ -183,7 +183,7 @@ nmap('^', '0')
 -- Begin plugin configs
 
 -- lspconfig
-local lspconfig = require 'lspconfig'
+local lspconfig = vim.lsp.config
 
 -- Credit to https://github.com/leonasdev,
 -- this function is based on his work @ https://github.com/neovim/nvim-lspconfig/issues/115#issuecomment-1801096383
@@ -272,13 +272,13 @@ local lspconfig_langs = {
 
 for _, lang in ipairs(lspconfig_langs) do
 	if type(lang) == 'string' then
-		lspconfig[lang].setup{}
+		lspconfig(lang, {})
 	else
 		local opts = (lang.opts ~= nil) and lang.opts or {}
 		if lang.before_setup then
 			lang.before_setup(opts)
 		end
-		lspconfig[lang.name].setup(opts)
+		lspconfig(lang.name, opts)
 	end
 end
 
