@@ -101,6 +101,9 @@ nmap('<M-J>', '<Cmd>bel new<CR>')
 nmap('<M-K>', '<Cmd>abo new<CR>')
 nmap('<M-L>', '<Cmd>bel vnew<CR>')
 
+-- Write with sudo
+cabbrev('w!!', 'w !sudo tee > /dev/null %')
+
 -- Tab navigation
 nmap('<M-[>', '<Cmd>tabprevious<CR>')
 nmap('<M-]>', '<Cmd>tabnext<CR>')
@@ -180,10 +183,16 @@ nmap('cw', 'ciw')
 nmap('0', '^') -- Swap 0 and ^
 nmap('^', '0')
 
+-- Helpful lua fns
+-- (these aren't common enough things to dedicated a keybind to, but are still worth automating)
+function yank_path()
+	vim.cmd('let @+ = expand("%:p")')
+end
+
 -- Begin plugin configs
 
 -- lspconfig
-local lspconfig = vim.lsp.config
+local lspconfig = require 'lspconfig'
 
 -- Credit to https://github.com/leonasdev,
 -- this function is based on his work @ https://github.com/neovim/nvim-lspconfig/issues/115#issuecomment-1801096383
@@ -272,13 +281,13 @@ local lspconfig_langs = {
 
 for _, lang in ipairs(lspconfig_langs) do
 	if type(lang) == 'string' then
-		lspconfig(lang, {})
+		lspconfig[lang].setup{}
 	else
 		local opts = (lang.opts ~= nil) and lang.opts or {}
 		if lang.before_setup then
 			lang.before_setup(opts)
 		end
-		lspconfig(lang.name, opts)
+		lspconfig[lang.name].setup(opts)
 	end
 end
 
